@@ -34,7 +34,7 @@ uv run python manage.py runserver
 
 `DJANGO_SETTINGS_MODULE` in `.env` chooses the environment for `manage.py`, `wsgi.py` and `asgi.py`, and none of them start without it. A variable set on the host wins over `.env`. `pytest` always uses `config.settings.test`.
 
-Do not run `migrate` before the Phase 1 custom user model exists.
+`migrate` changes the Neon `main` branch, which also serves prod. After the first run, also run `uv run python manage.py createcachetable`.
 
 ## Lint and format
 

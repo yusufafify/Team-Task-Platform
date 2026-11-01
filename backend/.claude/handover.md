@@ -5,32 +5,18 @@ Hard cap about 80 lines.
 ## Current state
 
 - Date: 2026-11-01
-- Roadmap phase: setup complete, waiting for skills + phase 1
-- Repository: `yusufafify/Team-Task-Platform`, branch `main`. Only the user commits.
+- Roadmap phase: Phase 1 built and applied to `main`; the first CI run is pending
+- Repository: `yusufafify/Team-Task-Platform`, working branch `backend`. Only the user commits.
 
-## Done last session
+## Done this session
 
-- Installed uv and created the project on the existing Python 3.11.9 `.venv` (D-009).
-- Added the foundation dependencies, the `config` project, the settings split, pytest, ruff, `.env.example`, `.gitignore` and `README.md`.
-- Bootstrapped the root `CLAUDE.md` and the `/docs` hub.
-- Created the backend agent files and commands.
-- Applied the permission rules and tested them: writes to `/web` and `/mobile` are refused, `.env` is denied, `.env.example` stays readable and editable.
-- Ran /sync-skills: all skills and conflicts are in `.claude/skills-index.md`. Excluded `.claude` from ruff.
-- Compacted `CLAUDE.md`; `/sync-skills` now writes to `.claude/skills-index.md`.
-- Installed `gemini-api-dev` as a real folder in `.claude/skills/`, from `google-gemini/gemini-skills` at `39d81f4`.
-- Replaced the dead `resend` and `email-best-practices` links with real folders in `.claude/skills/`, from `resend/resend-skills` at `b2ae7b1`. Hashes match `skills-lock.json`.
-- Made `DJANGO_SETTINGS_MODULE` in `.env` the only way to choose dev or prod; entry-point defaults removed, covered by `tests/test_environment.py`.
-- Added host deployment steps to `README.md`. Working locally until a host is chosen; the suggested free setup is Render's web service with Neon Postgres.
-- User created a Neon database in eu-central-1. Tested it: connection, TLS, pgvector 0.8.6 and an HNSW query all work, with the pgvector test rolled back. `neondb` is still empty. pgvector is not enabled yet; Phase 6 enables it through a migration with `VectorExtension`.
-
-- Reviewed the setup against best practices at the user's request. Tests now use a temporary `test_neondb` on the Neon test branch, `main` and `test` have separate jobs, `CorsMiddleware` comes first, prod logs to the console, the HSTS default is 3600, and the roadmap is updated. No migration has run on any branch yet.
-- Set up graphify for `/backend` only. No commit hook yet, because there's no git repository.
-- Audited the setup against solid, clean-code, anti-over-engineer, software-backend and software-search. Fixed four findings: pytest settings pin, prod connection reuse, prod log format, and the `DATABASE_URL` guard refusing a local CI database.
-- User removed `-pooler` from both URLs. `uv run pytest` passed 18 of 18, including the database test.
-- At the user's request, copied the Elyria project's Neon split: pooled `DATABASE_URL` for the app, `DIRECT_URL` for `migrate`, direct `TEST_DATABASE_URL` for tests.
-- Removed the root `CLAUDE.md`, by the user's decision. Its rules moved to `backend/CLAUDE.md` (under 50 lines), `docs/glossary.md` and `docs/decisions.md`. The root now holds `README.md` and `TODO.md`.
-- Split `brain.md` into an index plus regions in `.claude/rules/`, at the user's request. Each region has `paths:` frontmatter, so it loads by itself on matching files. `CLAUDE.md` now imports only the index, and session-start reads this file.
-- Audit items still open, none started: `/healthz` and `/readyz`, correlation IDs, rollback and smoke steps, dependency scan in CI, and removing boilerplate docstrings.
+- Built `accounts`, `teams`, `tasks`, `chat` and `notifications`: models, initial migrations and admin.
+- With the user's approval, applied all 23 migrations to Neon `main` through the direct host and ran `createcachetable`. Verified: none left unapplied, and the tables and constraints exist.
+- No detailed Phase 1 prompt existed, so the schema came from the roadmap line and the glossary. Choices and deletion tiers are in `.claude/rules/domain-model.md`.
+- Added tests for constraints, the deletion policy, admin pages, email login and model/migration drift, plus `tests/factories.py`. `uv run pytest --create-db` passed 64 of 64 on `test_neondb`. The rebuild was needed because the old test database was migrated with `auth.User`.
+- `tests/test_environment.py` now copies `apps` as well as `config`.
+- Added `.github/workflows/backend.yml`. actionlint passes, but the workflow has never run.
+- No API change, so no changelog entry, `openapi.yaml` or inbox notice.
 
 ## In progress
 
@@ -38,13 +24,17 @@ Nothing. Changes wait in the working tree for the user to commit.
 
 ## Next steps
 
-1. Wait for the Phase 1 prompt.
+1. After the first push, check that the Backend workflow passes, then tick Phase 1 in `.claude/roadmap.md` and `docs/status.md`.
+2. Wait for the Phase 2 prompt. Its task service must keep `completed_at` in step with the status, and must check that assignees belong to the team.
 
 ## Blockers / waiting on other agents
 
+- Any further `migrate` or data change on `main` needs the user's approval: `main` serves local work and prod.
+- User: `uv run python manage.py createsuperuser` is interactive, so the user runs it.
+- Root `README.md` and `TODO.md` are outside the read scope, so the schema wasn't checked against them. Needs `/add-dir D:\work\Nesma-Airlines` to read them.
 - `docs/` reads may need `/add-dir D:\work\Nesma-Airlines\docs` at session start. `.claude/settings.json` lists the folder, but reads were refused until that command ran.
-- User: add `connect_timeout=5` to `DATABASE_URL` in `.env`. Pooled and direct connections were both verified on 2026-11-01, and `main` still has no tables. This doesn't block Phase 1.
-- `main` serves local work and prod, by the user's decision, so confirm before any `migrate` or data change. Agents can't read or edit `.env`.
+- Agents can't read or edit `.env`.
+- Audit items still open, none started: `/healthz` and `/readyz`, correlation IDs, rollback and smoke steps, dependency scan in CI, and removing boilerplate docstrings.
 
 ## Inbox processed up to
 
@@ -53,3 +43,4 @@ None: the inbox was empty on 2026-11-01.
 ## History
 
 - 2026-11-01: setup session; skeleton, docs hub and agent files created.
+- 2026-11-01: Phase 1 models, migrations, admin and CI built.

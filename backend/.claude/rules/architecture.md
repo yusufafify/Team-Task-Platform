@@ -12,7 +12,7 @@ What's built, where it lives, and how it's configured.
 
 ## As built
 
-- Skeleton only: no project apps, models, endpoints or business logic yet.
+- Phase 1: five apps with models, initial migrations and admin. No endpoints or `services.py` yet. Apps have no `apps.py`, because Django's default config is enough.
 - Settings split: `base.py` holds shared values. `dev.py` and `prod.py` set `SECRET_KEY`, `ALLOWED_HOSTS`, `DATABASES` and `CORS_ALLOWED_ORIGINS`.
 - `DJANGO_SETTINGS_MODULE` in `.env` chooses dev or prod. `config/__init__.py` loads `.env` first, and `manage.py`, `wsgi.py` and `asgi.py` have no default, so they refuse to start without it. A variable set on the host wins over `.env`. pytest is pinned to `config.settings.test` in `pyproject.toml`.
 - Prod logs to the console at WARNING and up, with time, level and logger name, because Django's default console handler needs DEBUG on.
@@ -26,8 +26,8 @@ What's built, where it lives, and how it's configured.
 
 - `config/settings/`: settings package.
 - `config/urls.py`: Django's default admin route only.
-- `apps/README.md`: planned apps and the one-app-per-domain rule.
-- `tests/test_smoke.py`: checks that settings load.
+- `apps/README.md`: what each app holds, and the one-app-per-domain rule.
+- `tests/factories.py`: shared factories. `tests/test_smoke.py`: settings load, and models match migrations.
 - `pyproject.toml`: dependencies, pytest and ruff config.
 - `.env.example`: every environment variable, with a comment each.
 

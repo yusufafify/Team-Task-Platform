@@ -24,7 +24,14 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "drf_spectacular",
+    "apps.accounts",
+    "apps.teams",
+    "apps.tasks",
+    "apps.chat",
+    "apps.notifications",
 ]
+
+AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
     # CORS must precede WhiteNoise, and WhiteNoise must directly follow SecurityMiddleware.

@@ -7,7 +7,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started. Each agent edits only i
 - ✅ Folder structure, tooling and agent files
 - ✅ Permission rules in `backend/.claude/settings.json`
 - ✅ First commit, made by the user
-- ⬜ Phase 1: models, migrations, admin
+- 🔄 Phase 1: models, migrations, admin and CI built, migrations applied to `main`; the first CI run is pending
 - ⬜ Phase 2: auth, roles, scoping, core endpoints
 - ⬜ Phase 3: event pipeline and scheduled jobs
 - ⬜ Phase 4: AI provider layer

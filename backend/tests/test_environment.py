@@ -24,9 +24,10 @@ CORS_ALLOWED_ORIGINS=https://example.com
 
 def run_with_env_file(tmp_path: Path, env_file: str, args: list[str]):
     shutil.copy(BACKEND / "manage.py", tmp_path)
-    shutil.copytree(
-        BACKEND / "config", tmp_path / "config", ignore=shutil.ignore_patterns("__pycache__")
-    )
+    for package in ("config", "apps"):
+        shutil.copytree(
+            BACKEND / package, tmp_path / package, ignore=shutil.ignore_patterns("__pycache__")
+        )
     (tmp_path / ".env").write_text(env_file)
     # The test process already holds these from pytest-django and the real .env, and they'd win.
     hidden = {"DJANGO_SETTINGS_MODULE", "DATABASE_URL", "DIRECT_URL", "TEST_DATABASE_URL"}
