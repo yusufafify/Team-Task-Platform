@@ -32,7 +32,12 @@ How the Phase 2 API is built, and the choices made without a detailed phase prom
 - Registration is open, any user can create a team, and leaders add existing accounts by email. Invitations need email, so they wait for Phase 3 at least.
 - Members may change only `status`, and other fields are refused with 403, not ignored. Comments and messages can't be edited or deleted.
 - Chat transport is REST polling, because the server is WSGI with no broker. Cursor pagination keeps pages stable while messages arrive.
-- Tokens stay in the JSON body for both clients. Refresh tokens rotate, and used ones are blacklisted. `auth/logout/` revokes one, and `auth/logout-all/` revokes all of a user's. Any future password change should call `revoke_all_tokens`.
+- Web: both tokens sit in `HttpOnly`, `SameSite=Strict` cookies and never appear in a body, by the user's decision.
+- Mobile: `auth/mobile/*` returns tokens in the body for `expo-secure-store`, sent as Bearer. The user chose this because a phone must hold the session somewhere, the React Native docs call cookie auth unstable, and `HttpOnly` guards against XSS, which native apps don't have.
+- CSRF: `TrustedOrigin` replaces Django's CSRF tokens, so clients hold nothing. It's a default permission, so any view setting `permission_classes` must include it or `NoBrowser`.
+- `NoBrowser` keeps page scripts off the mobile endpoints. Mobile refresh reads only the body, so a cookie can never be turned into a token in a response.
+- Refresh tokens rotate, and used ones are blacklisted. `auth/logout-all/` revokes all of a user's, on both clients. Any future password change should call `revoke_all_tokens`.
+- A failed web refresh leaves cookies alone. Cookies are shared across tabs, so a second tab can lose the race, and clearing them would end the first tab's new session.
 - Stats period: whole days in the team's timezone, defaulting to the month so far. Stats and notifications live in existing apps, so there's no new app.
 - In-app notifications exist for assignment and comments. Phase 3 adds due-soon, overdue, email and push.
 
@@ -44,6 +49,7 @@ How the Phase 2 API is built, and the choices made without a detailed phase prom
 - A logged-out access token keeps working for up to 15 minutes.
 - Throttles use the database cache, so each login costs extra queries. Don't add throttling to read endpoints without measuring.
 - Prod requires `DJANGO_NUM_PROXIES`, and it must match the real host, or the address limits can be forged.
+- Cookies need the web app and API on one site. A host's shared domain, such as `vercel.app`, usually counts as separate sites, and the project has no budget for a domain, so prod uses a free same-origin proxy: the web host forwards `/api/*` to the API. The proxy counts toward `DJANGO_NUM_PROXIES`, and the web origin must be in `CORS_ALLOWED_ORIGINS`.
 - The server can't make polling cheap: JWT auth loads the user from the database on every request, so each one restarts Neon's 5-minute suspend timer. A rate limit wouldn't help, because it hits the database too. The idle-stop rule in `overview.md` is the only control, and it relies on clients following it.
 - Registration and `add_member` reveal whether an email has an account. Login doesn't. Accepted for now.
 - Not built: password reset or change, email change, leaving a team, date filters on tasks.

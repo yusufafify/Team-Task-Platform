@@ -4,15 +4,39 @@ Base path: `/api/v1/`. Requests and responses are JSON only, and every API path 
 
 ## Auth
 
-- `POST auth/register/` is open. `POST auth/login/` takes `email` and `password`, and returns `access` and `refresh`.
+Web and mobile authenticate differently. `POST auth/register/` is the same for both, and is open. Access tokens last 15 minutes, refresh tokens 7 days, and each refresh retires the token it used.
+
+### Web, and any other browser client
+
+Both tokens live in `HttpOnly` cookies. JavaScript can't read them, and the web app stores nothing. Never put a token in any browser storage.
+
+- Send every request with `credentials: "include"`.
+- `POST auth/login/` takes `email` and `password`, sets the cookies and returns the user.
+- To check whether someone is logged in, call `GET auth/me/`, which answers 200 or 401.
+- On a 401, call `POST auth/refresh/` with no body, then retry the original call.
+- If that refresh also gets 401, retry the original call once more, because another tab may have just refreshed. If it still fails, go to login.
+- Run only one refresh at a time in each tab, and queue other calls behind it.
+- `POST auth/logout/` takes no body, and clears the cookies.
+- In prod, the web host proxies `/api/*` to the API, so call relative `/api/...` paths from the same domain as the app. Cookies won't work if the app calls the API's own domain directly. Locally, use `localhost` for both, not `127.0.0.1`.
+- Writes from an origin the API doesn't know get 403.
+
+### Mobile
+
+There are no cookies here. The app keeps both tokens, in the device's encrypted storage only.
+
+- `POST auth/mobile/login/` takes `email` and `password`, and returns `access` and `refresh`.
+- Store both only in `expo-secure-store`. Never use AsyncStorage, and never log them.
 - Send `Authorization: Bearer <access>` on every other call.
-- Access tokens last 15 minutes, refresh tokens 7 days. On a 401, call `POST auth/refresh/` once, then send the user to login if that fails.
-- Refresh returns a new `refresh` token as well as `access`, and retires the one you sent. Save the new one straight away.
-- Send only one refresh at a time. A second request using the same token gets 401, so queue other calls behind the first.
-- Logout: `POST auth/logout/` with `refresh`, which needs no access token, then delete both tokens. On mobile, call `DELETE device-tokens/{token}/` first. An access token keeps working until it expires, up to 15 minutes.
-- `POST auth/logout-all/` ends every session of the requester, and takes an access token. Offer it as "sign out everywhere", because it's the way out of a stolen token.
-- Token storage: mobile uses `expo-secure-store`. Web keeps the access token in memory and the refresh token in `sessionStorage`, never `localStorage`.
-- Limits, answered with 429 and `Retry-After`: login 5 a minute per email and address, 20 a minute per address, 30 a minute per email across all addresses; register 10 an hour per address.
+- On a 401, call `POST auth/mobile/refresh/` with `refresh`. It returns a new `access` and `refresh`, so save both straight away.
+- Run only one refresh at a time, and queue other calls behind it. A second request using the same token gets 401.
+- To log out, call `DELETE device-tokens/{token}/`, then `POST auth/mobile/logout/` with `refresh`, then delete both tokens.
+- These three endpoints refuse any request with an `Origin` header. Native requests shouldn't send one, so a 403 here means something added it.
+
+### Both
+
+- `POST auth/logout-all/` ends every session of the requester, on every device. Offer it as "sign out everywhere", because it's the way out of a stolen token.
+- A logged-out access token keeps working until it expires, up to 15 minutes.
+- Limits, answered with 429 and `Retry-After`: login 5 a minute per email and address, 20 a minute per address, 30 a minute per email across all addresses; register 10 an hour per address. Web and mobile logins share these limits.
 
 ## Teams and roles
 

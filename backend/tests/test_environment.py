@@ -31,7 +31,13 @@ def run_with_env_file(tmp_path: Path, env_file: str, args: list[str]):
         )
     (tmp_path / ".env").write_text(env_file)
     # The test process already holds these from pytest-django and the real .env, and they'd win.
-    hidden = {"DJANGO_SETTINGS_MODULE", "DATABASE_URL", "DIRECT_URL", "TEST_DATABASE_URL"}
+    hidden = {
+        "DJANGO_SETTINGS_MODULE",
+        "DJANGO_NUM_PROXIES",
+        "DATABASE_URL",
+        "DIRECT_URL",
+        "TEST_DATABASE_URL",
+    }
     env = {k: v for k, v in os.environ.items() if k not in hidden}
     return subprocess.run(
         [sys.executable, *args], cwd=tmp_path, env=env, capture_output=True, text=True
@@ -187,6 +193,16 @@ def test_prod_takes_its_proxy_count_from_the_environment(tmp_path):
     result = run_with_env_file(tmp_path, env_file, args)
 
     assert result.stdout.strip() == "2"
+
+
+def test_prod_marks_auth_cookies_secure(tmp_path):
+    env_file = f"DJANGO_SETTINGS_MODULE=config.settings.prod{PROD_VALUES}"
+    print_flag = "from django.conf import settings; print(settings.AUTH_COOKIE_SECURE)"
+    args = ["manage.py", "shell", "-v", "0", "-c", print_flag]
+
+    result = run_with_env_file(tmp_path, env_file, args)
+
+    assert result.stdout.strip() == "True"
 
 
 def test_prod_refuses_to_start_without_a_proxy_count(tmp_path):

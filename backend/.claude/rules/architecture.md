@@ -18,7 +18,7 @@ What's built, where it lives, and how it's configured.
 - Settings split: `base.py` holds shared values. `dev.py` and `prod.py` set `SECRET_KEY`, `ALLOWED_HOSTS`, `DATABASES` and `CORS_ALLOWED_ORIGINS`.
 - `DJANGO_SETTINGS_MODULE` in `.env` chooses dev or prod. `config/__init__.py` loads `.env` first, and `manage.py`, `wsgi.py` and `asgi.py` have no default, so they refuse to start without it. A variable set on the host wins over `.env`. pytest is pinned to `config.settings.test` in `pyproject.toml`.
 - Prod logs to the console at WARNING and up, with time, level and logger name, because Django's default console handler needs DEBUG on.
-- DRF defaults: JWT authentication, `IsAuthenticated`, drf-spectacular schema class, JSON-only, page size 20, throttle rates. Access tokens last 15 minutes, refresh tokens 7 days and rotate.
+- DRF defaults: cookie then Bearer JWT authentication, `TrustedOrigin` and `IsAuthenticated`, drf-spectacular schema class, JSON-only, page size 20, throttle rates. `AUTH_COOKIE_SECURE` is off only in dev. Access tokens last 15 minutes, refresh tokens 7 days and rotate.
 - Cache: database backend, table `django_cache`.
 - Static files: whitenoise, with compressed manifest storage in prod only.
 - A blank environment variable is removed in `base.py`, so it behaves as unset. Prod then refuses to start if it's required.

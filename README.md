@@ -13,7 +13,7 @@ A team communication and task management platform with workflow automation, an A
 
 | Path | Contents | State |
 |---|---|---|
-| `backend/` | Django + DRF API | Skeleton: settings, tooling and tests, with no apps or endpoints yet |
+| `backend/` | Django + DRF API | Core API built: auth, teams, tasks, comments, chat, notifications and stats |
 | `docs/` | Shared hub: API docs, decisions, glossary, status and agent inboxes | In use |
 | `web/` | React + TanStack single-page app | Not started |
 | `mobile/` | Expo React Native app | Not started |
@@ -23,11 +23,11 @@ See [TODO.md](TODO.md) for what's next.
 
 ## Stack
 
-- **Backend:** Python 3.11, Django 5.2 LTS, Django REST Framework, JWT auth
+- **Backend:** Python 3.11, Django 5.2 LTS, Django REST Framework, JWT auth, with `HttpOnly` cookies on web and encrypted device storage on mobile
 - **Database:** PostgreSQL with pgvector on Neon
 - **Web:** React, TanStack
 - **Mobile:** Expo React Native
-- **Automation:** GitHub Actions cron calling a protected endpoint, with no Celery or Redis
+- **Automation:** Management commands run by one `run_scheduler` process beside the Django server, with no Celery or Redis
 
 ## Getting started
 

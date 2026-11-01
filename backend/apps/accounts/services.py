@@ -3,7 +3,9 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, transaction
 from rest_framework.exceptions import ValidationError
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
@@ -23,6 +25,15 @@ def register_user(*, email: str, password: str, first_name: str = "", last_name:
     except IntegrityError as error:
         # The unique constraint, not a prior check, so two racing signups can't both get through.
         raise ValidationError({"email": ["This email is already registered."]}) from error
+
+
+def revoke_refresh_token(raw_token: str | None) -> None:
+    if raw_token is None:
+        return
+    try:
+        RefreshToken(raw_token).blacklist()
+    except TokenError:
+        pass  # Already expired or revoked, which is what logging out wants anyway.
 
 
 def revoke_all_tokens(user: User) -> None:

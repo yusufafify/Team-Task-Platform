@@ -6,9 +6,8 @@ paths:
   /api/v1/auth/login/:
     post:
       operationId: auth_login_create
-      description: |-
-        Takes a set of user credentials and returns an access and refresh JSON web
-        token pair to prove the authentication of those credentials.
+      description: Shared by both logins, so alternating between them buys no extra
+        guesses.
       tags:
       - auth
       requestBody:
@@ -22,24 +21,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenObtainPair'
+                $ref: '#/components/schemas/User'
           description: ''
   /api/v1/auth/logout/:
     post:
       operationId: auth_logout_create
-      description: |-
-        Takes a token and blacklists it. Must be used with the
-        `rest_framework_simplejwt.token_blacklist` app installed.
       tags:
       - auth
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TokenBlacklistRequest'
-        required: true
       responses:
-        '200':
+        '204':
           description: No response body
   /api/v1/auth/logout-all/:
     post:
@@ -47,6 +37,7 @@ paths:
       tags:
       - auth
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '204':
@@ -57,6 +48,7 @@ paths:
       tags:
       - auth
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -75,6 +67,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedUserRequest'
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -83,9 +76,46 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
-  /api/v1/auth/refresh/:
+  /api/v1/auth/mobile/login/:
     post:
-      operationId: auth_refresh_create
+      operationId: auth_mobile_login_create
+      description: Shared by both logins, so alternating between them buys no extra
+        guesses.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/v1/auth/mobile/logout/:
+    post:
+      operationId: auth_mobile_logout_create
+      description: |-
+        Takes a token and blacklists it. Must be used with the
+        `rest_framework_simplejwt.token_blacklist` app installed.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenBlacklistRequest'
+        required: true
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/mobile/refresh/:
+    post:
+      operationId: auth_mobile_refresh_create
       description: |-
         Takes a refresh type JSON web token and returns an access type JSON web
         token if the refresh token is valid.
@@ -104,6 +134,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenRefresh'
           description: ''
+  /api/v1/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      responses:
+        '204':
+          description: No response body
   /api/v1/auth/register/:
     post:
       operationId: auth_register_create
@@ -115,8 +156,6 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterRequest'
         required: true
-      security:
-      - {}
       responses:
         '201':
           content:
@@ -136,6 +175,7 @@ paths:
               $ref: '#/components/schemas/DeviceTokenRequest'
         required: true
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '201':
@@ -156,6 +196,7 @@ paths:
       tags:
       - device-tokens
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '204':
@@ -177,6 +218,7 @@ paths:
       tags:
       - notifications
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -198,6 +240,7 @@ paths:
       tags:
       - notifications
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -212,6 +255,7 @@ paths:
       tags:
       - notifications
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '204':
@@ -271,6 +315,7 @@ paths:
       tags:
       - tasks
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -290,6 +335,7 @@ paths:
               $ref: '#/components/schemas/TaskCreateRequest'
         required: true
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '201':
@@ -311,6 +357,7 @@ paths:
       tags:
       - tasks
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -336,6 +383,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedTaskRequest'
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -356,6 +404,7 @@ paths:
       tags:
       - tasks
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '204':
@@ -378,6 +427,7 @@ paths:
       tags:
       - tasks
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -403,6 +453,7 @@ paths:
               $ref: '#/components/schemas/CommentRequest'
         required: true
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '201':
@@ -424,6 +475,7 @@ paths:
       tags:
       - teams
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -443,6 +495,7 @@ paths:
               $ref: '#/components/schemas/TeamRequest'
         required: true
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '201':
@@ -464,6 +517,7 @@ paths:
       tags:
       - teams
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -489,6 +543,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedTeamRequest'
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -509,6 +564,7 @@ paths:
       tags:
       - teams
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '204':
@@ -525,6 +581,7 @@ paths:
       tags:
       - teams
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -552,6 +609,7 @@ paths:
               $ref: '#/components/schemas/AddMemberRequest'
         required: true
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '201':
@@ -582,6 +640,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedMemberRoleRequest'
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -606,6 +665,7 @@ paths:
       tags:
       - teams
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '204':
@@ -628,6 +688,7 @@ paths:
       tags:
       - teams
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -653,6 +714,7 @@ paths:
               $ref: '#/components/schemas/MessageRequest'
         required: true
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '201':
@@ -685,6 +747,7 @@ paths:
       tags:
       - teams
       security:
+      - cookieAuth: []
       - jwtAuth: []
       responses:
         '200':
@@ -1439,6 +1502,10 @@ components:
           type: string
           maxLength: 150
   securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
     jwtAuth:
       type: http
       scheme: bearer

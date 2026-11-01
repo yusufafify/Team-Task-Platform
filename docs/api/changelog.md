@@ -28,3 +28,18 @@ Newest entries go at the bottom. Entry format:
 - Change: changed
 - Breaking: no
 - Notes: The 5-a-minute limit is now per email and address, with a new 30-a-minute limit per email across addresses.
+
+## 2026-11-01 — `POST /api/v1/auth/login/`, `/refresh/`, `/logout/`
+- Change: changed
+- Breaking: yes
+- Notes: Browser auth moved to `HttpOnly` cookies. Login returns the user and sets cookies, refresh and logout take no body and return 204, and no token appears in any body. No client exists yet.
+
+## 2026-11-01 — `POST /api/v1/auth/mobile/login/`, `/mobile/refresh/`, `/mobile/logout/`
+- Change: added
+- Breaking: no
+- Notes: The mobile app's token flow, sent as Bearer. Requests with an `Origin` header get 403.
+
+## 2026-11-01 — all write endpoints
+- Change: changed
+- Breaking: no
+- Notes: A write from an origin outside the allowed list gets 403.

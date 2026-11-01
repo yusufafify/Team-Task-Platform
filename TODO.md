@@ -4,13 +4,14 @@ What's left to do. For what exists today, see [README.md](README.md). Per-agent 
 
 ## Before Phase 1
 
-- [ ] In `backend/.env`, put `-pooler` back in `DATABASE_URL`, add `connect_timeout=5`, and add `DIRECT_URL` with the direct host
+- [x] In `backend/.env`, put `-pooler` back in `DATABASE_URL`, add `connect_timeout=5`, and add `DIRECT_URL` with the direct host
 
 ## Backend
 
-- [ ] Phase 1: models, migrations and admin, including team membership and Expo device tokens, plus CI running tests and ruff
-- [ ] Phase 2: auth, roles, scoping, team management, core task, comment, chat and notification endpoints, stats, JSON-only responses in prod, throttled login, pagination, health checks
-- [ ] Phase 3: deployment and event pipeline: email via Resend, Expo push, scheduled jobs, cron endpoint and GitHub workflow
+- [x] Phase 1: models, migrations and admin, including team membership and Expo device tokens, plus CI running tests and ruff
+- [x] Phase 2: auth, roles, scoping, team management, core task, comment, chat and notification endpoints, stats, JSON-only responses in prod, throttled login, pagination, health checks
+- [ ] Clear the GitHub billing lock and run the Backend workflow, which has never run
+- [ ] Phase 3: deployment and event pipeline: email via Resend, Expo push, scheduled jobs and the `run_scheduler` process
 - [ ] Phase 4: AI provider layer, rate limiting and call logging
 - [ ] Phase 5: chatbot: snapshot, tools and answer cache
 - [ ] Phase 6: RAG with pgvector
@@ -19,7 +20,7 @@ What's left to do. For what exists today, see [README.md](README.md). Per-agent 
 
 ## Backend hardening
 
-- [ ] Separate `/healthz` and `/readyz`, with `/healthz` not touching the database
+- [x] Separate `/healthz` and `/readyz`, with `/healthz` not touching the database
 - [ ] Correlation IDs on every request and log line
 - [ ] Rollback steps and a smoke-check list in the deploy instructions
 - [ ] Dependency vulnerability scan in CI
