@@ -5,11 +5,12 @@ Hard cap about 80 lines.
 ## Current state
 
 - Date: 2026-11-01
-- Roadmap phase: Phases 1 and 2 ticked at the user's request, with CI deferred. Phase 2 isn't committed yet
+- Roadmap phase: Phases 1 and 2 ticked at the user's request, with CI deferred. Both are committed. Phase 3 is now the AI provider layer, not started
 - Repository: `yusufafify/Team-Task-Platform`, working branch `backend`. Only the user commits.
 
 ## Done this session
 
+- Reordered the roadmap at the user's request: deployment + event pipeline moved as one phase from 3 to 8, and old Phases 4 to 8 became 3 to 7. Renumbered every reference and sent BE-004 to web and mobile. No code or endpoint changed.
 - Built Phase 2 with no detailed prompt, from the roadmap line and glossary. Patterns, product decisions and limits are in `.claude/rules/api.md`.
 - Endpoints under `/api/v1/`: auth, teams and members, tasks, comments, chat, notifications, device tokens, stats. Also JSON errors, pagination, login and register throttles, `/healthz` and `/readyz`.
 - Our apps have no schema change. `DeviceToken`'s validator moved to a module constant, and `makemigrations --check` confirms no drift.
@@ -27,9 +28,10 @@ Nothing.
 
 ## Next steps
 
-1. User reviews and commits Phase 2.
+1. User commits the roadmap reorder.
 2. When the user clears the billing lock, run the Backend workflow, because Phases 1 and 2 were ticked without it.
-3. Wait for the Phase 3 prompt. Hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`.
+3. Wait for the Phase 3 prompt (AI provider layer).
+4. For Phase 8 (deployment): hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`.
 
 ## Blockers / waiting on other agents
 
@@ -48,3 +50,4 @@ None: the inbox was empty on 2026-11-01.
 - 2026-11-01: setup session; skeleton, docs hub and agent files created.
 - 2026-11-01: Phase 1 models, migrations, admin and CI built.
 - 2026-11-01: Phase 2 API built, with the token blacklist applied to `main`.
+- 2026-11-01: roadmap reordered, deployment + event pipeline moved to Phase 8.

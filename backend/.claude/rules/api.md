@@ -14,7 +14,7 @@ How the Phase 2 API is built, and the choices made without a detailed phase prom
 
 ## Patterns
 
-- Services take the acting user, enforce role and team themselves, and raise DRF exceptions. Phase 5's LLM tools must call these same services, so a check placed only in a view would be skipped.
+- Services take the acting user, enforce role and team themselves, and raise DRF exceptions. Phase 4's LLM tools must call these same services, so a check placed only in a view would be skipped.
 - A stranger gets 404 from `get_membership`, a member lacking the role gets 403 from `require_leader`. `visible_tasks` is the one scope for tasks and comments.
 - Team and assignee ids are plain `IntegerField`s, never related fields, which would reveal which ids exist before the service answers.
 - Every view sets `queryset = Model.objects.none()`, so drf-spectacular reads the model without running a user-scoped `get_queryset`.
@@ -29,7 +29,7 @@ How the Phase 2 API is built, and the choices made without a detailed phase prom
 
 - Error format: DRF's default, not RFC 9457. Django's own 400, 404 and 500 pages are replaced by `{"detail": ...}`.
 - JSON-only renderers and parsers apply in every environment, so dev matches prod.
-- Registration is open, any user can create a team, and leaders add existing accounts by email. Invitations need email, so they wait for Phase 3 at least.
+- Registration is open, any user can create a team, and leaders add existing accounts by email. Invitations need email, so they wait for Phase 8 at least.
 - Members may change only `status`, and other fields are refused with 403, not ignored. Comments and messages can't be edited or deleted.
 - Chat transport is REST polling, because the server is WSGI with no broker. Cursor pagination keeps pages stable while messages arrive.
 - Web: both tokens sit in `HttpOnly`, `SameSite=Strict` cookies and never appear in a body, by the user's decision.
@@ -39,7 +39,7 @@ How the Phase 2 API is built, and the choices made without a detailed phase prom
 - Refresh tokens rotate, and used ones are blacklisted. `auth/logout-all/` revokes all of a user's, on both clients. Any future password change should call `revoke_all_tokens`.
 - A failed web refresh leaves cookies alone. Cookies are shared across tabs, so a second tab can lose the race, and clearing them would end the first tab's new session.
 - Stats period: whole days in the team's timezone, defaulting to the month so far. Stats and notifications live in existing apps, so there's no new app.
-- In-app notifications exist for assignment and comments. Phase 3 adds due-soon, overdue, email and push.
+- In-app notifications exist for assignment and comments. Phase 8 adds due-soon, overdue, email and push.
 
 ## Limits
 

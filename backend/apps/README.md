@@ -8,4 +8,4 @@ Rule: one app per domain; business logic in `services.py`.
 - `chat`: team messages.
 - `notifications`: in-app notifications and Expo device tokens.
 
-Planned: `ai`, from Phase 4.
+Planned: `ai`, from Phase 3.

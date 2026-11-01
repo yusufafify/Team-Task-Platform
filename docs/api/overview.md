@@ -73,7 +73,7 @@ There are no cookies here. The app keeps both tokens, in the device's encrypted 
   - Stop polling after 2 minutes with no user input, and resume on the next input or focus.
   - Don't run any timer while the app is in the background or the tab is hidden.
 - `GET notifications/?unread=true` gives the badge count in `count`. Fetch it on app open, on focus and on screen changes, with no timer of its own.
-- A notification is created when a task is assigned, and when someone comments on a task you created or are assigned to. Its `title` is a fixed phrase, its `body` is the task's title. Due-soon, overdue, email and push arrive with Phase 3.
+- A notification is created when a task is assigned, and when someone comments on a task you created or are assigned to. Its `title` is a fixed phrase, its `body` is the task's title. Due-soon, overdue, email and push arrive with Phase 8.
 - `POST device-tokens/` stores an Expo token. A token already on another account moves to the requester.
 
 ## Stats

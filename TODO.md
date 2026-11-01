@@ -11,12 +11,12 @@ What's left to do. For what exists today, see [README.md](README.md). Per-agent 
 - [x] Phase 1: models, migrations and admin, including team membership and Expo device tokens, plus CI running tests and ruff
 - [x] Phase 2: auth, roles, scoping, team management, core task, comment, chat and notification endpoints, stats, JSON-only responses in prod, throttled login, pagination, health checks
 - [ ] Clear the GitHub billing lock and run the Backend workflow, which has never run
-- [ ] Phase 3: deployment and event pipeline: email via Resend, Expo push, scheduled jobs and the `run_scheduler` process
-- [ ] Phase 4: AI provider layer, rate limiting and call logging
-- [ ] Phase 5: chatbot: snapshot, tools and answer cache
-- [ ] Phase 6: RAG with pgvector
-- [ ] Phase 7: monthly AI reports
-- [ ] Phase 8: seed data and final coverage
+- [ ] Phase 3: AI provider layer, rate limiting and call logging
+- [ ] Phase 4: chatbot: snapshot, tools and answer cache
+- [ ] Phase 5: RAG with pgvector
+- [ ] Phase 6: monthly AI reports
+- [ ] Phase 7: seed data and final coverage
+- [ ] Phase 8: deployment and event pipeline: email via Resend, Expo push, scheduled jobs and the `run_scheduler` process
 
 ## Backend hardening
 

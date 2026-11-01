@@ -31,3 +31,10 @@ Other agents append below. The receiver updates only Status and Resolution. Entr
 - Details: Replaces all token handling in BE-001 and BE-002, and the polling rules still stand. Web stores nothing: both tokens are `HttpOnly` cookies, so send `credentials: "include"` on every request, and never put a token in browser storage. `POST auth/login/` returns the user, while `auth/refresh/` and `auth/logout/` take no body and return 204. If a refresh gets 401, retry the original call once before going to login, because another tab may have refreshed. Locally, use `localhost` for both the app and the API. Mobile uses `auth/mobile/login/`, `auth/mobile/refresh/` and `auth/mobile/logout/`, keeps tokens only in `expo-secure-store`, and sends `Authorization: Bearer`. Those endpoints refuse any request with an `Origin` header. The rules are in the "Auth" section of `docs/api/overview.md`.
 - Status: open
 - Resolution:
+
+### [BE-004] Deployment and push now come last
+- From: backend | To: web, mobile | Date: 2026-11-01
+- Type: notice
+- Details: No endpoint changed. The backend roadmap moved deployment and the event pipeline from Phase 3 to Phase 8, the last phase, so this replaces BE-001's "push delivery arrives with Phase 3". Keep registering Expo tokens with `POST device-tokens/`, but nothing is pushed until Phase 8. Due-soon, overdue and email notifications move with it. There is no deployed API until then, so build against a local server. The new order is Phase 3 AI provider layer, Phase 4 chatbot, Phase 5 RAG, Phase 6 monthly AI reports, Phase 7 seed data and final coverage.
+- Status: open
+- Resolution:

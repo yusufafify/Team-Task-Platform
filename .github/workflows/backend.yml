@@ -18,7 +18,7 @@ jobs:
         working-directory: backend
     services:
       postgres:
-        # Same major version as Neon, and it ships pgvector for Phase 6.
+        # Same major version as Neon, and it ships pgvector for Phase 5.
         image: pgvector/pgvector:pg18
         env:
           POSTGRES_PASSWORD: postgres
