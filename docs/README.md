@@ -1,6 +1,6 @@
 # Docs Hub
 
-The backend, web and mobile agents work independently and communicate only through this folder.
+The backend, web and mobile agents work independently and communicate only through this folder. Each agent's rules live in its own `<dir>/CLAUDE.md`, under 50 lines. There is no root `CLAUDE.md`.
 
 ## Layout
 
@@ -12,6 +12,7 @@ The backend, web and mobile agents work independently and communicate only throu
 | `api/changelog.md` | Every API change. Backend owns it. |
 | `inbox/backend.md`, `inbox/web.md`, `inbox/mobile.md` | Messages addressed to that agent. |
 | `decisions.md` | Project-wide decision log. |
+| `glossary.md` | Shared domain terms and metric definitions. |
 
 ## Sending a message
 

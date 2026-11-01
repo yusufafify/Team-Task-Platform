@@ -28,6 +28,7 @@ Hard cap about 80 lines.
 - Audited the setup against solid, clean-code, anti-over-engineer, software-backend and software-search. Fixed four findings: pytest settings pin, prod connection reuse, prod log format, and the `DATABASE_URL` guard refusing a local CI database.
 - User removed `-pooler` from both URLs. `uv run pytest` passed 18 of 18, including the database test.
 - At the user's request, copied the Elyria project's Neon split: pooled `DATABASE_URL` for the app, `DIRECT_URL` for `migrate`, direct `TEST_DATABASE_URL` for tests.
+- Removed the root `CLAUDE.md`, by the user's decision. Its rules moved to `backend/CLAUDE.md` (under 50 lines), `docs/glossary.md` and `docs/decisions.md`. The root now holds `README.md` and `TODO.md`.
 - Audit items still open, none started: `/healthz` and `/readyz`, correlation IDs, rollback and smoke steps, dependency scan in CI, and removing boilerplate docstrings.
 
 ## In progress
@@ -40,13 +41,13 @@ Nothing. Changes wait in the working tree for the user to commit.
 
 ## Blockers / waiting on other agents
 
-- User: allow reads of `docs/`. `.claude/settings.json` already lists it, but `permissions.blockReadsOutsideWorkingDirectories` refused the reads, so session-start is incomplete and the inbox and status are unread.
+- `docs/` reads may need `/add-dir D:\work\Nesma-Airlines\docs` at session start. `.claude/settings.json` lists the folder, but reads were refused until that command ran.
 - User: in `.env`, put `-pooler` back in `DATABASE_URL`, add `connect_timeout=5`, and add `DIRECT_URL` with the direct host. Until then everything still works, on the direct URL.
 - `main` serves local work and prod, by the user's decision, so confirm before any `migrate` or data change. Agents can't read or edit `.env`.
 
 ## Inbox processed up to
 
-None
+None: the inbox was empty on 2026-11-01.
 
 ## History
 

@@ -14,3 +14,6 @@ Append new decisions at the bottom. To change one, add a new entry that supersed
 | D-008 | 2026-11-01 | Datetimes stored in UTC; each team has a timezone (default "Africa/Cairo"). |
 | D-009 | 2026-11-01 | Backend runs on Python 3.11: the user kept the existing `.venv` instead of the planned 3.12+. Django stays on 5.x because Django 6 requires Python 3.12. |
 | D-010 | 2026-11-01 | Each agent's rules, permissions and skills are encapsulated in its own working directory to fit its technology. There is no shared root `.claude/`. |
+| D-011 | 2026-11-01 | There is no root `CLAUDE.md`. Each part keeps its rules in its own `<dir>/CLAUDE.md`, under 50 lines, because agents don't read past that. The root holds `README.md` and `TODO.md`. |
+| D-012 | 2026-11-01 | Only the user commits and pushes. Agents never do, whatever a ritual or skill says. |
+| D-013 | 2026-11-01 | Neon connections: the app uses the pooled URL, migrations use the direct URL, and tests use a separate branch on a direct URL. `main` serves both dev and prod, by the user's decision. |

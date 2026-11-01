@@ -46,7 +46,7 @@ Load a skill only when its row applies. Most skill examples are TypeScript, so t
 
 ## Conflicts with the Architecture decisions
 
-The Architecture decisions in the root `CLAUDE.md` win over every skill.
+The Architecture section of `CLAUDE.md` wins over every skill.
 
 | Skill guidance | Decision | Do this instead |
 |---|---|---|

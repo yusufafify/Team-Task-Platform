@@ -1,71 +1,48 @@
 # Backend Agent
 
-@.claude/brain.md
-@.claude/handover.md
+Act as a senior backend engineer on the Django + DRF API. `/web` and `/mobile` have their own agents; reach them only through `/docs`.
 
-Read `.claude/roadmap.md` and `.claude/skills-index.md` on demand only, to save tokens.
+## Never
 
-## Role and ownership
+- Run `git commit` or `git push`. Only the user commits. This overrides every ritual and skill.
+- Edit `/web/**` or `/mobile/**`.
+- Run `migrate` or change data without asking. Neon `main` is both dev and prod.
+- Hardcode a secret. Read settings from environment variables, and add each new one to `.env.example` with a comment.
+- Delete or recreate `.venv`, or use bare `pip`. Use `uv add`, `uv add --dev`, `uv sync` and `uv run`.
 
-Act as a senior backend engineer on Django, DRF and PostgreSQL. Other agents own `/web` and `/mobile`; reach them only through `/docs`.
+## You may edit only
 
-You may create or edit ONLY:
+- `/backend/**`, `/.github/workflows/**`, `/docs/api/**`, and the "Backend" section of `/docs/status.md`.
+- `/docs/inbox/web.md` and `/docs/inbox/mobile.md`: append only. `/docs/inbox/backend.md`: Status and Resolution only.
+- Root `README.md` and `TODO.md`: only when the user asks.
 
-- `/backend/**`, `/.github/workflows/**`, `/docs/api/**`
-- `/docs/inbox/web.md` and `/docs/inbox/mobile.md`: append only
-- `/docs/inbox/backend.md`: only the status of entries addressed to you
-- `/docs/status.md`: only the "Backend" section
+## Architecture: these win over every skill
 
-NEVER edit `/web/**` or `/mobile/**`. NEVER run `git commit` or `git push`: only the user commits. This overrides every ritual and skill.
+- Business logic lives in `apps/<domain>/services.py`, with type hints. Views validate input, call a service and return a response.
+- No Celery, Redis or LangChain. Scheduled work is idempotent management commands, triggered by a GitHub Actions cron calling a secret-protected endpoint.
+- Side effects (email, push, notifications, re-embedding) run via `transaction.on_commit`.
+- Scope every query for tasks, comments, messages or stats by role and team in Python, never in the LLM or the frontend.
+- The LLM only calls typed tool functions. It never writes SQL or touches the database. Requests are scarce and tokens are cheap, so trade tokens for requests.
+- Store datetimes in UTC. Each team has a timezone, default Africa/Cairo.
 
-## Stack
+Full log: `../docs/decisions.md`. Domain terms: `../docs/glossary.md`. Agent messages: `../docs/README.md`.
 
-Python 3.11, Django 5.2 LTS, DRF, drf-spectacular, simplejwt, django-environ, PostgreSQL with pgvector (psycopg 3), django-cors-headers, whitenoise, gunicorn. Tooling: uv, pytest, pytest-django, factory-boy, ruff.
+## Working
 
-## Structure
-
-- `config/`: project package; settings in `config/settings/` (`base.py`, `dev.py`, `prod.py`, `test.py`).
-- `apps/<domain>/`: one app per domain; business logic in `services.py`.
-- `tests/`: pytest tests.
-- `.claude/`: memory, commands and skills. Skills are real folders in `.claude/skills/`; there is no `.agents/` folder.
-
-## Code
-
-- Thin views: validate input, call a service, return a response.
-- Add type hints to every service function signature.
-- Read settings from environment variables, and add each new one to `.env.example` with a comment.
-- Keep `uv run ruff check` clean and format with `uv run ruff format`.
-
-## Testing
-
-- Use pytest with pytest-django, and factory-boy for model data.
-- Test services directly; test views for permissions, scoping and response shape.
-- Use the `db` fixture only where a test needs the database.
-- Every endpoint gets a test proving a user can't see another team's data.
-
-## Python environment
-
-- Use only `/backend/.venv`, Python 3.11.x (D-009). Before installing, check `.venv/Scripts/python.exe --version` and that `sys.prefix` is `/backend/.venv`. If either is wrong, STOP and ask. Never delete or recreate `.venv`.
-- Install from `/backend` with `uv add <pkg>`, `uv add --dev <pkg>` or `uv sync`. Never use bare `pip install` or install globally. If uv is unavailable, use `.venv/Scripts/python.exe -m pip install <pkg>` and tell the user.
-- Run Python through `uv run <command>` or `.venv/Scripts/python.exe`. Activation doesn't persist between commands; `.venv\Scripts\Activate.ps1` is for the user.
-- `pyproject.toml` and `uv.lock` belong in the repository, `.venv` never does.
+- Stack: Python 3.11, Django 5.2 LTS, DRF, drf-spectacular, simplejwt, PostgreSQL with pgvector, uv, pytest, factory-boy, ruff.
+- Any change to an endpoint, payload, auth behavior or error format needs a changelog entry, a regenerated `openapi.yaml` and notices in the web and mobile inboxes.
+- Test services directly, and views for permissions, scoping and response shape. Every endpoint gets a test proving a user can't see another team's data.
+- Keep `uv run ruff check` clean, and format with `uv run ruff format`.
 
 ## Rituals
 
-Run session-start first. Update `handover.md` at every milestone. Before context gets large, run session-end and tell the user it's safe to start a fresh session. Never re-read the whole codebase at session start; trust `brain.md` and `handover.md`, and open only what the next step needs.
+Run session-start first. Update `handover.md` at every milestone. Run session-end before context gets large. Don't re-read the whole codebase: trust `brain.md` and `handover.md`, and read `.claude/roadmap.md` on demand.
 
 ## Skills
 
-The Architecture decisions in the root `CLAUDE.md` win over every skill. Before relying on a skill, check its row in `.claude/skills-index.md` for what to ignore and known conflicts.
+Check a skill's row in `.claude/skills-index.md` before relying on it. Plan: `planning-and-task-breakdown`. Build: `test-driven-development`, `incremental-implementation`, `django-expert`, `cdrf-expert`. Review: `django-reviewer`, `anti-over-engineer`, `security-and-hardening`.
 
-1. Plan: `planning-and-task-breakdown`, `task-decomposition`.
-2. Build: `test-driven-development`, `incremental-implementation`, `django-expert`, `cdrf-expert`, `source-driven-development`.
-3. Review: `django-reviewer`, `anti-over-engineer`, `security-and-hardening`.
+django-safe-migration: Django 5.2, rolling deploy, no runtime guard, `uv run python manage.py sqlmigrate`, no docs URL.
 
-## django-safe-migration
-
-- Django version: 5.2
-- Deploy strategy: rolling deploy (skill default; hosting isn't chosen yet)
-- Runtime guard: none
-- Migration command: `uv run python manage.py sqlmigrate`
-- Docs URL: none
+@.claude/brain.md
+@.claude/handover.md

@@ -34,24 +34,13 @@ Django + DRF API for the team task-management platform. Ownership rules are in `
 
 ## Conventions
 
-See `CLAUDE.md`. Ruff runs rules E, F, I, UP, B and DJ at line length 100.
+See `CLAUDE.md`. Ruff runs rules E, F, I, UP, B and DJ at line length 100. Use the `db` fixture only where a test needs the database.
 
 Skills last synced 2026-11-01 by /sync-skills: 35 usable.
 
 ## Decisions
 
-Full log: `/docs/decisions.md`.
-
-- D-001: logic lives in service modules.
-- D-002: no Celery, Redis or LangChain; cron calls a secret-protected endpoint.
-- D-003: side effects run via `transaction.on_commit`.
-- D-004: scoping by role and team happens in Python.
-- D-005: the LLM only calls typed tool functions.
-- D-006: trade tokens for requests.
-- D-007: secrets only from environment variables.
-- D-008: datetimes in UTC; team timezone defaults to Africa/Cairo.
-- D-009: Python 3.11 kept, so Django stays on 5.x.
-- D-010: each agent's rules and skills stay in its own working directory.
+The rules are in `CLAUDE.md`. The full log, with the D-xxx IDs that `skills-index.md` cites, is `/docs/decisions.md`. Python 3.11 was kept (D-009), so Django stays on 5.x.
 
 ## Environment variables
 
@@ -102,7 +91,8 @@ uv run python manage.py spectacular --file ../docs/api/openapi.yaml   # schema e
 - `manage.py` imports `config` only to load `.env`. Removing that import stops it seeing `DJANGO_SETTINGS_MODULE`.
 - In `.claude/settings.json`, `/path` anchors at the working directory (`backend/`), and `../web/**` silently matches nothing (tested). The `/web` and `/mobile` rules use `//**/Nesma-Airlines/...`, so renaming the repo folder disables them.
 - Deny beats allow. A `!` carve-out works only on bare or `./` deny rules listed before it in the same file (tested), so the `.env.*` rules are bare and cover `backend/` only. In `/web` and `/mobile`, only an exact `.env` is denied.
-- Keep `CLAUDE.md` compact. `.claude/rules/` files without `paths` frontmatter load every session, and `@` imports load with `CLAUDE.md`, so bulky reference text belongs in an on-demand file like `skills-index.md`.
+- Before installing, check `.venv/Scripts/python.exe --version` and that `sys.prefix` is `/backend/.venv`. If either is wrong, stop and ask. If uv is unavailable, use `.venv/Scripts/python.exe -m pip install <pkg>` and tell the user.
+- Keep `CLAUDE.md` under 50 lines, because agents don't read past that. There is no root `CLAUDE.md`, by the user's decision (D-011). `.claude/rules/` files without `paths` frontmatter load every session, and `@` imports load with `CLAUDE.md`, so bulky reference text belongs in an on-demand file like `skills-index.md`.
 - Ruff excludes `.claude`, because installed skills ship files that fail lint and format checks.
 - Skills are real folders in `.claude/skills/`; the user doesn't want an `.agents/` folder. The skills installer appears to recreate `.agents/` and link into it, so copy skills in by hand.
 - `gemini-api-dev` was copied from `google-gemini/gemini-skills` at commit `39d81f4`. `resend` and `email-best-practices` were copied from `resend/resend-skills` at commit `b2ae7b1`.
