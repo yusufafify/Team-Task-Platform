@@ -35,7 +35,7 @@ Load a skill only when its row applies. Most skill examples are TypeScript, so t
 | software-performance | Profiling, load tests, budgets | Only when latency is a stated problem | Lighthouse and frontend budgets |
 | software-realtime | Transport choice, reconnects, presence | Team chat and notifications design in Phase 2 | Redis, NATS, Kafka, CRDTs, PartyKit, multi-node scaling |
 | software-search | Postgres search, pgvector, hybrid ranking | Phase 6 | Algolia, Elasticsearch, Typesense, Meilisearch, facets, search analytics |
-| software-security-appsec | Auth, input handling, supply chain, agent threat models | Phases 2 and 5, and GitHub Secrets for the Phase 3 cron secret | Web3 and .NET content. "Avoid JWTs": see below |
+| software-security-appsec | Auth, input handling, supply chain, agent threat models | Phases 2 and 5 | Web3 and .NET content. "Avoid JWTs": see below |
 | solid | SOLID, clean code, TDD | Design questions about a service's responsibilities | Mandatory value objects, two-field classes, 10-line methods, one-dot rule: they don't fit Django models |
 | source-driven-development | Verifying code against official docs | Framework code you'd otherwise write from memory. Use `docs.djangoproject.com/en/5.2/`, not its 6.0 example | Source citations in code comments, unless they explain a non-obvious why |
 | spec-driven-development | Specs before code | When a phase prompt leaves requirements unclear | `SPEC-*.md` and `tasks/`: the phase prompt is the spec |
@@ -51,7 +51,7 @@ The Architecture section of `CLAUDE.md` wins over every skill.
 | Skill guidance | Decision | Do this instead |
 |---|---|---|
 | django-expert references: "Use Redis for production caching", "Offload heavy tasks to Celery" | D-002 | Database cache; idempotent management commands |
-| software-backend, including `references/message-queues-background-jobs.md`: queues, workers, dead-letter queues | D-002 | Management commands triggered by the cron endpoint |
+| software-backend, including `references/message-queues-background-jobs.md`: queues, workers, dead-letter queues | D-002, D-015 | Management commands run by `run_scheduler` |
 | software-realtime: Redis pub/sub, Redis `SETEX` presence, Kafka | D-002 | Design for one node without a broker; choose the transport in Phase 2 |
 | performance-optimization: shared Redis or Memcached cache | D-002 | Database cache |
 | software-ai-integration: LangGraph, queue-and-worker batches, background re-index jobs | D-002, D-003 | Direct provider SDK; management commands for batches; `transaction.on_commit` for re-embedding |
@@ -60,7 +60,7 @@ The Architecture section of `CLAUDE.md` wins over every skill.
 | django-expert and django-reviewer: domain logic in models or managers | D-001 | Keep business logic in `services.py` |
 | database-deletion-strategy: cron or worker purge jobs, row-level security | D-002, D-004 | Idempotent management command; role and team scoping in Python |
 | resend automations, email-best-practices list hygiene jobs | D-002 | Keep workflow logic in Django; run it through management commands |
-| email-best-practices references: job queue for webhook handling and critical sends | D-002, D-003 | Send through `transaction.on_commit`; keep pending work in a Postgres table processed by a management command. Scalability: this is deliberately simple, so retries wait for the next cron run; if we need to scale, optimize that timing then |
+| email-best-practices references: job queue for webhook handling and critical sends | D-002, D-003 | Send through `transaction.on_commit`; keep pending work in a Postgres table processed by a management command. Scalability: this is deliberately simple, so retries wait for the next scheduler run; if we need to scale, optimize that timing then |
 | debugging-and-error-recovery: default value when config is missing | D-007 | Keep failing at startup in prod |
 | sql-expert and software-backend: raw SQL or bypassing the ORM | D-004, D-005 | Allowed for developers only; scope by role and team in Python, and never expose it to the LLM |
 | gemini-api-dev: managed agents, Deep Research, code execution, Google Search, URL context, computer use, hosted File Search | D-004, D-005 | Give the model only typed function tools over scoped Django services; use pgvector for RAG |

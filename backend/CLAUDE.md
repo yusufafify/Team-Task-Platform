@@ -19,7 +19,7 @@ Act as a senior backend engineer on the Django + DRF API. `/web` and `/mobile` h
 ## Architecture: these win over every skill
 
 - Business logic lives in `apps/<domain>/services.py`, with type hints. Views validate input, call a service and return a response.
-- No Celery, Redis or LangChain. Scheduled work is idempotent management commands, triggered by a GitHub Actions cron calling a secret-protected endpoint.
+- No Celery, Redis or LangChain. Scheduled work is idempotent management commands, run by one `manage.py run_scheduler` process beside the Django server. GitHub Actions is for CI/CD only, and no product feature may depend on it.
 - Side effects (email, push, notifications, re-embedding) run via `transaction.on_commit`.
 - Scope every query for tasks, comments, messages or stats by role and team in Python, never in the LLM or the frontend.
 - The LLM only calls typed tool functions. It never writes SQL or touches the database. Requests are scarce and tokens are cheap, so trade tokens for requests.
