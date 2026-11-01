@@ -43,7 +43,7 @@ Nothing. Changes wait in the working tree for the user to commit.
 ## Blockers / waiting on other agents
 
 - `docs/` reads may need `/add-dir D:\work\Nesma-Airlines\docs` at session start. `.claude/settings.json` lists the folder, but reads were refused until that command ran.
-- User: in `.env`, put `-pooler` back in `DATABASE_URL`, add `connect_timeout=5`, and add `DIRECT_URL` with the direct host. Until then everything still works, on the direct URL.
+- User: add `connect_timeout=5` to `DATABASE_URL` in `.env`. Pooled and direct connections were both verified on 2026-11-01, and `main` still has no tables. This doesn't block Phase 1.
 - `main` serves local work and prod, by the user's decision, so confirm before any `migrate` or data change. Agents can't read or edit `.env`.
 
 ## Inbox processed up to
