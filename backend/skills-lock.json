@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "skills": {
+    "cdrf-expert": {
+      "source": "vintasoftware/django-ai-plugins",
+      "sourceType": "github",
+      "skillPath": "skills/cdrf-expert/SKILL.md",
+      "computedHash": "7721f912dccc51c2b06934c2de58e456dc5498b6e996cb30cf3ef1c992f28377"
+    },
+    "django-celery-expert": {
+      "source": "vintasoftware/django-ai-plugins",
+      "sourceType": "github",
+      "skillPath": "skills/django-celery-expert/SKILL.md",
+      "computedHash": "163ad566532bf0a90f31bd27f70255742f06d6110c4508b5a0ee8ec8df301121"
+    },
+    "django-expert": {
+      "source": "vintasoftware/django-ai-plugins",
+      "sourceType": "github",
+      "skillPath": "skills/django-expert/SKILL.md",
+      "computedHash": "3efd4c5513e401438dd3c275a7ce7c7838566bfc455d22ed731fbc5879cb56c1"
+    },
+    "django-reviewer": {
+      "source": "vintasoftware/django-ai-plugins",
+      "sourceType": "github",
+      "skillPath": "skills/django-reviewer/SKILL.md",
+      "computedHash": "ba697251efca4397237ce78aae9da1e2b2a2908dc168f7247d4c9013f893c6fd"
+    },
+    "django-safe-migration": {
+      "source": "vintasoftware/django-ai-plugins",
+      "sourceType": "github",
+      "skillPath": "skills/django-safe-migration/SKILL.md",
+      "computedHash": "b28691565037d29de87a2f16d39bbf825685b46a6249226d05b70533125d4f23"
+    },
+    "email-best-practices": {
+      "source": "resend/resend-skills",
+      "sourceType": "github",
+      "skillPath": "skills/email-best-practices/SKILL.md",
+      "computedHash": "6a73e98be9b3618405de0d0457f59eea77e5c5fa89377e6f0d76d51c192221bd"
+    },
+    "gemini-api-dev": {
+      "source": "google-gemini/gemini-skills",
+      "sourceType": "github",
+      "skillPath": "skills/gemini-api-dev/SKILL.md",
+      "computedHash": "65558cbf4bf3e22c34ce8257ed75a363acd9616b5dd5464274a9c32d22cb734d"
+    },
+    "resend": {
+      "source": "resend/resend-skills",
+      "sourceType": "github",
+      "skillPath": "skills/resend/SKILL.md",
+      "computedHash": "48c14808dd31fa3fe107bde119eab5d431a4bfa63106bd61c5eed8a68af0741f"
+    }
+  }
+}

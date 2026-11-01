@@ -1,0 +1,3 @@
+# Installed skills, agent notes and the skills lockfile aren't backend code.
+.claude/
+skills-lock.json

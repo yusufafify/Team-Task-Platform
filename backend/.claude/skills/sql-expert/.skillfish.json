@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "sql-expert",
+  "owner": "bingeli1379",
+  "repo": "eli-marketplace",
+  "path": "plugins/sdd-database/skills/sql-expert",
+  "branch": "main",
+  "sha": "ec88ba101b09e34b97de0530cbaf3a0b9705b7c4",
+  "source": "manual"
+}

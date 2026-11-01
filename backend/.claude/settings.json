@@ -1,0 +1,25 @@
+{
+  "enabledPlugins": {
+    "ponytail@ponytail": true
+  },
+  "permissions": {
+    "additionalDirectories": [
+      "../docs/",
+      "../.github/"
+    ],
+    "allow": [
+      "Bash(uv run *)",
+      "PowerShell(uv run *)"
+    ],
+    "deny": [
+      "Edit(//**/Nesma-Airlines/web/**)",
+      "Edit(//**/Nesma-Airlines/mobile/**)",
+      "Read(//**/.env)",
+      "Edit(//**/.env)",
+      "Read(.env.*)",
+      "Read(!.env.example)",
+      "Edit(.env.*)",
+      "Edit(!.env.example)"
+    ]
+  }
+}
