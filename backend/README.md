@@ -86,6 +86,7 @@ No host is chosen yet, so these steps apply to any Linux host. Run them there, n
 | `DJANGO_SETTINGS_MODULE` | `config.settings.prod` |
 | `DJANGO_SECRET_KEY` | A long random value, used only on this host |
 | `DJANGO_ALLOWED_HOSTS` | The API hostname, such as `api.example.com` |
+| `DJANGO_NUM_PROXIES` | How many proxies sit in front of the app, `0` for none. A wrong value lets clients forge their address and dodge login limits |
 | `DATABASE_URL` | The pooled PostgreSQL URL on a database with pgvector. Add `sslmode=require` if the database requires SSL, and `connect_timeout=5` |
 | `CORS_ALLOWED_ORIGINS` | The web app's origin with its scheme, such as `https://app.example.com` |
 

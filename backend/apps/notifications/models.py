@@ -2,6 +2,10 @@ from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
 
+expo_token_validator = RegexValidator(
+    r"^Expo(nent)?PushToken\[[^\]]+\]\Z", "Enter a valid Expo push token."
+)
+
 
 class Notification(models.Model):
     class Kind(models.TextChoices):
@@ -37,13 +41,7 @@ class DeviceToken(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="device_tokens"
     )
-    token = models.CharField(
-        max_length=255,
-        unique=True,
-        validators=[
-            RegexValidator(r"^Expo(nent)?PushToken\[[^\]]+\]\Z", "Enter a valid Expo push token.")
-        ],
-    )
+    token = models.CharField(max_length=255, unique=True, validators=[expo_token_validator])
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

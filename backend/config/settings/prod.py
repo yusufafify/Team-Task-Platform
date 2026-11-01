@@ -1,7 +1,7 @@
 """Production settings. Required variables have no default, so a missing one stops startup."""
 
 from .base import *
-from .base import env
+from .base import REST_FRAMEWORK, env
 
 DEBUG = False
 SECRET_KEY = env("DJANGO_SECRET_KEY")
@@ -23,8 +23,12 @@ STORAGES = {
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = True
+# Host health probes usually speak plain HTTP and would read a redirect as a failure.
+SECURE_REDIRECT_EXEMPT = [r"^healthz$", r"^readyz$"]
 # shortcut: assumes a TLS proxy that overwrites this header, revisit once the host is chosen.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# Unset, DRF keys its throttles on the raw X-Forwarded-For, which a client can vary at will.
+REST_FRAMEWORK = REST_FRAMEWORK | {"NUM_PROXIES": env.int("DJANGO_NUM_PROXIES")}
 SECURE_HSTS_SECONDS = env.int("DJANGO_SECURE_HSTS_SECONDS", default=3600)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True

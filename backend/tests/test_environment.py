@@ -17,6 +17,7 @@ ASGI = ["-c", f"import config.asgi; {PRINT_MODULE}"]
 PROD_VALUES = """
 DJANGO_SECRET_KEY=test-only
 DJANGO_ALLOWED_HOSTS=example.com
+DJANGO_NUM_PROXIES=2
 DATABASE_URL=postgres://localhost:5432/test
 CORS_ALLOWED_ORIGINS=https://example.com
 """
@@ -176,6 +177,26 @@ def test_prod_logs_errors_to_the_console(tmp_path):
     result = run_with_env_file(tmp_path, env_file, args)
 
     assert re.search(r"\d{4}-\d\d-\d\d \S+ ERROR django\.request probe-error", result.stderr)
+
+
+def test_prod_takes_its_proxy_count_from_the_environment(tmp_path):
+    env_file = f"DJANGO_SETTINGS_MODULE=config.settings.prod{PROD_VALUES}"
+    print_proxies = "from rest_framework.settings import api_settings as s; print(s.NUM_PROXIES)"
+    args = ["manage.py", "shell", "-v", "0", "-c", print_proxies]
+
+    result = run_with_env_file(tmp_path, env_file, args)
+
+    assert result.stdout.strip() == "2"
+
+
+def test_prod_refuses_to_start_without_a_proxy_count(tmp_path):
+    values = PROD_VALUES.replace("DJANGO_NUM_PROXIES=2", "")
+    env_file = f"DJANGO_SETTINGS_MODULE=config.settings.prod{values}"
+
+    result = run_with_env_file(tmp_path, env_file, MANAGE)
+
+    assert result.returncode != 0
+    assert "DJANGO_NUM_PROXIES" in result.stderr
 
 
 def test_settings_flag_reaches_the_test_branch(tmp_path):
