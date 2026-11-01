@@ -29,6 +29,7 @@ Hard cap about 80 lines.
 - User removed `-pooler` from both URLs. `uv run pytest` passed 18 of 18, including the database test.
 - At the user's request, copied the Elyria project's Neon split: pooled `DATABASE_URL` for the app, `DIRECT_URL` for `migrate`, direct `TEST_DATABASE_URL` for tests.
 - Removed the root `CLAUDE.md`, by the user's decision. Its rules moved to `backend/CLAUDE.md` (under 50 lines), `docs/glossary.md` and `docs/decisions.md`. The root now holds `README.md` and `TODO.md`.
+- Split `brain.md` into an index plus regions in `.claude/rules/`, at the user's request. Each region has `paths:` frontmatter, so it loads by itself on matching files. `CLAUDE.md` now imports only the index, and session-start reads this file.
 - Audit items still open, none started: `/healthz` and `/readyz`, correlation IDs, rollback and smoke steps, dependency scan in CI, and removing boilerplate docstrings.
 
 ## In progress

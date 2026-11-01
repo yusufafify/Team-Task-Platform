@@ -3,7 +3,7 @@ description: Save backend state, publish API changes, and list changed paths for
 ---
 
 1. Update `.claude/handover.md`, keeping it to about 80 lines and only the last 3 sessions in History.
-2. Update `.claude/brain.md` if durable facts changed, keeping it to about 150 lines by condensing rather than growing.
+2. Save any new durable facts to their brain region, following the rules in `.claude/brain.md`.
 3. If the API changed:
    - Add an entry to `../docs/api/changelog.md`.
    - Run `uv run python manage.py spectacular --file ../docs/api/openapi.yaml`.

@@ -17,3 +17,4 @@ Append new decisions at the bottom. To change one, add a new entry that supersed
 | D-011 | 2026-11-01 | There is no root `CLAUDE.md`. Each part keeps its rules in its own `<dir>/CLAUDE.md`, under 50 lines, because agents don't read past that. The root holds `README.md` and `TODO.md`. |
 | D-012 | 2026-11-01 | Only the user commits and pushes. Agents never do, whatever a ritual or skill says. |
 | D-013 | 2026-11-01 | Neon connections: the app uses the pooled URL, migrations use the direct URL, and tests use a separate branch on a direct URL. `main` serves both dev and prod, by the user's decision. |
+| D-014 | 2026-11-01 | An agent's `brain.md` is only an index. Facts live in small path-scoped files in `.claude/rules/`, which load by themselves on matching files, and a new topic gets a new region plus one index row. Rules that prevent real damage stay in `CLAUDE.md`. |

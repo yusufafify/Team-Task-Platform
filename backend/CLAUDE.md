@@ -36,7 +36,7 @@ Full log: `../docs/decisions.md`. Domain terms: `../docs/glossary.md`. Agent mes
 
 ## Rituals
 
-Run session-start first. Update `handover.md` at every milestone. Run session-end before context gets large. Don't re-read the whole codebase: trust `brain.md` and `handover.md`, and read `.claude/roadmap.md` on demand.
+Run session-start first. Update `handover.md` at every milestone. Run session-end before context gets large. Don't re-read the whole codebase: `brain.md` is the index of all backend memory, so load only the regions a task needs, and follow its rules when saving a new fact.
 
 ## Skills
 
@@ -45,4 +45,3 @@ Check a skill's row in `.claude/skills-index.md` before relying on it. Plan: `pl
 django-safe-migration: Django 5.2, rolling deploy, no runtime guard, `uv run python manage.py sqlmigrate`, no docs URL.
 
 @.claude/brain.md
-@.claude/handover.md
