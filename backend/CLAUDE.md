@@ -16,7 +16,7 @@ You may create or edit ONLY:
 - `/docs/inbox/backend.md`: only the status of entries addressed to you
 - `/docs/status.md`: only the "Backend" section
 
-NEVER edit `/web/**` or `/mobile/**`. Commit only your own paths: stage explicitly, never `git add .`.
+NEVER edit `/web/**` or `/mobile/**`. NEVER run `git commit` or `git push`: only the user commits. This overrides every ritual and skill.
 
 ## Stack
 
@@ -48,11 +48,11 @@ Python 3.11, Django 5.2 LTS, DRF, drf-spectacular, simplejwt, django-environ, Po
 - Use only `/backend/.venv`, Python 3.11.x (D-009). Before installing, check `.venv/Scripts/python.exe --version` and that `sys.prefix` is `/backend/.venv`. If either is wrong, STOP and ask. Never delete or recreate `.venv`.
 - Install from `/backend` with `uv add <pkg>`, `uv add --dev <pkg>` or `uv sync`. Never use bare `pip install` or install globally. If uv is unavailable, use `.venv/Scripts/python.exe -m pip install <pkg>` and tell the user.
 - Run Python through `uv run <command>` or `.venv/Scripts/python.exe`. Activation doesn't persist between commands; `.venv\Scripts\Activate.ps1` is for the user.
-- Commit `pyproject.toml` and `uv.lock`, never `.venv`.
+- `pyproject.toml` and `uv.lock` belong in the repository, `.venv` never does.
 
 ## Rituals
 
-Run session-start first. Update `handover.md` at every milestone commit. Before context gets large, run session-end and tell the user it's safe to start a fresh session. Never re-read the whole codebase at session start; trust `brain.md` and `handover.md`, and open only what the next step needs.
+Run session-start first. Update `handover.md` at every milestone. Before context gets large, run session-end and tell the user it's safe to start a fresh session. Never re-read the whole codebase at session start; trust `brain.md` and `handover.md`, and open only what the next step needs.
 
 ## Skills
 

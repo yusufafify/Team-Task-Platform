@@ -6,7 +6,7 @@ Hard cap about 80 lines.
 
 - Date: 2026-11-01
 - Roadmap phase: setup complete, waiting for skills + phase 1
-- Last commit: none, no git repository yet
+- Repository: `yusufafify/Team-Task-Platform`, branch `main`. Only the user commits.
 
 ## Done last session
 
@@ -32,16 +32,14 @@ Hard cap about 80 lines.
 
 ## In progress
 
-Nothing. All setup files are written but uncommitted.
+Nothing. Changes wait in the working tree for the user to commit.
 
 ## Next steps
 
-1. Make the first commit once the repository exists, staging only `CLAUDE.md`, `docs` and `backend`.
-2. Wait for the Phase 1 prompt.
+1. Wait for the Phase 1 prompt.
 
 ## Blockers / waiting on other agents
 
-- User: create the git repository at the monorepo root, then confirm the first commit.
 - User: allow reads of `docs/`. `.claude/settings.json` already lists it, but `permissions.blockReadsOutsideWorkingDirectories` refused the reads, so session-start is incomplete and the inbox and status are unread.
 - User: in `.env`, put `-pooler` back in `DATABASE_URL`, add `connect_timeout=5`, and add `DIRECT_URL` with the direct host. Until then everything still works, on the direct URL.
 - `main` serves local work and prod, by the user's decision, so confirm before any `migrate` or data change. Agents can't read or edit `.env`.
