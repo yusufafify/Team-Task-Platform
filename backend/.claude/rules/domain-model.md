@@ -28,4 +28,5 @@ Schema choices made in Phase 1 from the roadmap and glossary, because no detaile
 - `User`: `PROTECT` from every task, comment and message they appear on. Set `is_active=False` instead. Account erasure, when it's needed, should anonymize the row and keep its key.
 - `Team`: `PROTECT` from tasks and messages, so only an empty team can be deleted. Django's `on_delete` lives in Python, so changing it needs no schema change.
 - `AssistantMessage`: hard delete, cascading from `TeamMembership`. A demotion also deletes it, in `change_member_role`.
+- `Embedding`: hard delete, cascading from its task, comment or message. It's derived data with no text, and `embed_pending` can rebuild it.
 - `AICall`: never deleted, because the rows are the rate limits' counter. `SET_NULL` on user and team, so a deleted user's calls still count that day.

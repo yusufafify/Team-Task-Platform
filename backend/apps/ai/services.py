@@ -1,5 +1,6 @@
 import time
 from datetime import timedelta
+from typing import NoReturn
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -42,17 +43,22 @@ def generate(
     Never call this inside `transaction.atomic`: the lock would be held for the whole request,
     and a rollback would erase the log row, so the request would go uncounted.
     """
-    call = _reserve(feature, user, team)
+    call = _reserve(
+        feature,
+        user,
+        team,
+        model=settings.AI_MODEL,
+        per_minute=settings.AI_REQUESTS_PER_MINUTE,
+        per_day=settings.AI_REQUESTS_PER_DAY,
+        per_user=settings.AI_REQUESTS_PER_USER_PER_DAY,
+    )
     started = time.monotonic()
     try:
         reply = provider.send(
             prompt, system=system, tools=tools, tool_choice=tool_choice, timeout=timeout
         )
     except provider.ProviderError as exc:
-        _finish(call, started, AICall.Status.FAILED, error=str(exc))
-        if isinstance(exc, provider.QuotaExceeded):
-            raise Throttled() from exc
-        raise AIUnavailable() from exc
+        _refuse(call, started, exc)
     if reply.status not in ("completed", "requires_action"):
         _finish(call, started, AICall.Status.FAILED, reply, f"Provider status: {reply.status}")
         raise AIUnavailable()
@@ -60,8 +66,58 @@ def generate(
     return reply
 
 
-def _reserve(feature: AICall.Feature, user: User | None, team: Team | None) -> AICall:
-    """Log the call before sending it, so failures and crashes still count against the limits."""
+def embed(
+    texts: list[str],
+    *,
+    dimensions: int,
+    user: User | None = None,
+    team: Team | None = None,
+    timeout: float | None = None,
+) -> list[list[float]]:
+    """Embed `texts` in one request, counted and logged like `generate`.
+
+    Embedding has its own quota, so it has its own limits. The chat limit for one person doesn't
+    apply, because chat requests already bound how often they search. The rule on
+    `transaction.atomic` is the same as `generate`'s.
+    """
+    call = _reserve(
+        AICall.Feature.EMBED,
+        user,
+        team,
+        model=settings.AI_EMBEDDING_MODEL,
+        per_minute=settings.AI_EMBEDDING_REQUESTS_PER_MINUTE,
+        per_day=settings.AI_EMBEDDING_REQUESTS_PER_DAY,
+    )
+    started = time.monotonic()
+    try:
+        vectors = provider.embed(texts, dimensions=dimensions, timeout=timeout)
+    except provider.ProviderError as exc:
+        _refuse(call, started, exc)
+    _finish(call, started, AICall.Status.SUCCEEDED)
+    return vectors
+
+
+def _refuse(call: AICall, started: float, exc: provider.ProviderError) -> NoReturn:
+    _finish(call, started, AICall.Status.FAILED, error=str(exc))
+    if isinstance(exc, provider.QuotaExceeded):
+        raise Throttled() from exc
+    raise AIUnavailable() from exc
+
+
+def _reserve(
+    feature: AICall.Feature,
+    user: User | None,
+    team: Team | None,
+    *,
+    model: str,
+    per_minute: int,
+    per_day: int,
+    per_user: int | None = None,
+) -> AICall:
+    """Log the call before sending it, so failures and crashes still count against the limits.
+
+    Counts one model's calls, because Gemini's quotas are per model.
+    """
     with transaction.atomic():
         # Counting and inserting must be one step, or concurrent calls all take the last slot.
         with connection.cursor() as cursor:
@@ -71,19 +127,21 @@ def _reserve(feature: AICall.Feature, user: User | None, team: Team | None) -> A
         day_start = now.astimezone(QUOTA_TIMEZONE).replace(
             hour=0, minute=0, second=0, microsecond=0
         )
-        counts = AICall.objects.filter(created_at__gte=min(minute_ago, day_start)).aggregate(
+        counts = AICall.objects.filter(
+            model=model, created_at__gte=min(minute_ago, day_start)
+        ).aggregate(
             minute=Count("pk", filter=Q(created_at__gte=minute_ago)),
             day=Count("pk", filter=Q(created_at__gte=day_start)),
             user_day=Count("pk", filter=Q(created_at__gte=day_start, user=user)),
         )
-        over_user_limit = user and counts["user_day"] >= settings.AI_REQUESTS_PER_USER_PER_DAY
+        over_user_limit = user and per_user is not None and counts["user_day"] >= per_user
         # Daily limits first, so a caller over both is told the longer wait.
-        if over_user_limit or counts["day"] >= settings.AI_REQUESTS_PER_DAY:
+        if over_user_limit or counts["day"] >= per_day:
             # `now` is in UTC here, so this subtraction stays right across a clock change.
             raise Throttled(wait=(day_start + timedelta(days=1) - now).total_seconds())
-        if counts["minute"] >= settings.AI_REQUESTS_PER_MINUTE:
+        if counts["minute"] >= per_minute:
             raise Throttled(wait=60)
-        return AICall.objects.create(feature=feature, model=settings.AI_MODEL, user=user, team=team)
+        return AICall.objects.create(feature=feature, model=model, user=user, team=team)
 
 
 def _finish(

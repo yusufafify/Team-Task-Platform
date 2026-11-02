@@ -12,7 +12,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started. Each agent edits only i
 - ✅ Phase 3: AI provider layer, rate limits and call logging built, passing locally and confirmed against live Gemini, migration applied to `main`; no endpoint changed; the CI workflow hasn't run yet
 - ✅ Phase 4: chatbot built, passing locally and confirmed against live Gemini on a real server, migration applied to `main`, demo team seeded; endpoints published as BE-006; the CI workflow hasn't run yet
 - ✅ Live socket for chat and notifications, at the user's request: published as BE-007; checked on a real server with real sockets; not yet tried from a real browser or phone
-- ⬜ Phase 5: RAG
+- ✅ Phase 5: RAG: search tool built, passing locally and confirmed against live Gemini, migration applied to `main`, demo team embedded; no endpoint changed; the CI workflow hasn't run yet
 - ⬜ Phase 6: monthly AI reports
 - ⬜ Phase 7: seed data, tests, schema export
 - ⬜ Phase 8: deployment, event pipeline and scheduled jobs

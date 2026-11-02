@@ -3,9 +3,10 @@
 from dataclasses import dataclass
 from functools import cache
 
+import httpx
 from django.conf import settings
 from google import genai
-from google.genai import types
+from google.genai import errors, types
 from google.genai._interactions import APIError, RateLimitError
 
 # Stays under the 30 seconds that hosts and proxies commonly allow a request.
@@ -82,3 +83,33 @@ def send(
         output_tokens=usage.total_output_tokens if usage else None,
         total_tokens=usage.total_tokens if usage else None,
     )
+
+
+def embed(texts: list[str], *, dimensions: int, timeout: float | None = None) -> list[list[float]]:
+    """Make exactly one HTTP request. Returns one vector per text, in order.
+
+    `timeout` is in seconds, like `send`.
+    """
+    config = types.EmbedContentConfig(output_dimensionality=dimensions)
+    if timeout:
+        config.http_options = types.HttpOptions(timeout=round(timeout * 1000))
+    try:
+        result = _client().models.embed_content(
+            model=settings.AI_EMBEDDING_MODEL,
+            # One Content each, because this model merges a plain list into a single vector.
+            contents=[types.Content(parts=[types.Part.from_text(text=text)]) for text in texts],
+            config=config,
+        )
+    except errors.APIError as exc:
+        # This path has its own errors, separate from those of Interactions above.
+        if exc.code == 429:
+            raise QuotaExceeded(str(exc)) from exc
+        raise ProviderError(str(exc)) from exc
+    except httpx.HTTPError as exc:
+        # Unlike Interactions, this path lets timeouts and network failures through unwrapped.
+        raise ProviderError(str(exc)) from exc
+    vectors = [item.values for item in result.embeddings or []]
+    # A wrong count can't be matched back to its texts, so a vector would land on the wrong row.
+    if len(vectors) != len(texts):
+        raise ProviderError(f"Asked for {len(texts)} embeddings, got {len(vectors)}.")
+    return vectors

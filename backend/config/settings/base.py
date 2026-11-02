@@ -140,6 +140,10 @@ AI_MODEL = env("AI_MODEL", default="gemini-3.5-flash-lite")
 AI_REQUESTS_PER_MINUTE = env.int("AI_REQUESTS_PER_MINUTE", default=10)
 AI_REQUESTS_PER_DAY = env.int("AI_REQUESTS_PER_DAY", default=200)
 AI_REQUESTS_PER_USER_PER_DAY = env.int("AI_REQUESTS_PER_USER_PER_DAY", default=30)
+# Chosen because one request can hold documents and a query, which gemini-embedding-001 can't.
+AI_EMBEDDING_MODEL = env("AI_EMBEDDING_MODEL", default="gemini-embedding-2")
+AI_EMBEDDING_REQUESTS_PER_MINUTE = env.int("AI_EMBEDDING_REQUESTS_PER_MINUTE", default=30)
+AI_EMBEDDING_REQUESTS_PER_DAY = env.int("AI_EMBEDDING_REQUESTS_PER_DAY", default=500)
 
 SEED_USER_PASSWORD = env("SEED_USER_PASSWORD", default=None)
 

@@ -8,4 +8,4 @@ Rule: one app per domain; business logic in `services.py`.
 - `chat`: team messages.
 - `notifications`: in-app notifications, Expo device tokens and the live socket.
 - `ai`: the LLM provider, rate limits and call log.
-- `assistant`: the chatbot: its private threads, snapshot, tools and answer cache.
+- `assistant`: the chatbot: its private threads, snapshot, tools, answer cache and search.

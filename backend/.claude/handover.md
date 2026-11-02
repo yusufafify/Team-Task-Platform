@@ -5,47 +5,33 @@ Hard cap about 80 lines.
 ## Current state
 
 - Date: 2026-11-02
-- Roadmap phase: Phases 1 to 4 are ticked, with CI deferred. Phase 5 (RAG) is next.
+- Roadmap phase: Phases 1 to 5 are ticked, with CI deferred. Phase 6 (monthly AI reports) is next.
 - Repository: `yusufafify/Team-Task-Platform`, working branch `backend`. Only the user commits.
 
 ## Done this session
 
-- Built Phase 3 from the roadmap line, with no detailed prompt. Design, decisions and SDK traps are in `.claude/rules/ai.md`.
-- New `apps/ai`: `generate()` in `services.py` is the one gateway, `provider.py` the only file importing `google-genai`, and `AICall` both the log and the limits' counter. A Postgres advisory lock makes reserving a slot atomic. The admin is read-only.
-- Added `google-genai` 2.34.0, and five settings in `.env.example`. `GEMINI_API_KEY` is required in prod. Test settings force a fake key, so a test can't spend real quota.
-- Found by driving the real SDK against a fake HTTP transport: `HttpRetryOptions(attempts=0)` still retries once, so `_client()` sets `retry_config = None`. Each 429 would otherwise have cost two requests or more.
-- No endpoint changed. The generated schema matches `docs/api/openapi.yaml`, so no changelog entry or inbox notice was needed.
-- All 9 deliberate breaks of a safeguard were caught, including removing the lock. A review pass led to 2 small fixes: the longer wait wins, and the timeout now has a test.
-- Finished Phase 3: migrated `main`, made one real call, reran the full suite and ticked the roadmap.
-- Added the user's graphify rule to `CLAUDE.md` and memory. Tested details are in `.claude/rules/agent-setup.md`. The first `graphify update` took the graph from 105 to 634 nodes and dropped 43 concepts extracted from docs. The old graph is in `graphify-out/curated-2026-11-01/`.
-- At the user's request, checked auth and errors against software-backend, clean code and SOLID before Phase 4. Added `config/exceptions.py` (stable `code`, Django `ValidationError` as 400, which fixed a crafted-cursor 500), `config/request_id.py`, and a test that walks every URL. Decisions are in `.claude/rules/api.md`. Published as BE-005, with a changelog entry. `openapi.yaml` regenerated with no diff.
-- Split `.claude/rules/api-limits.md` out of `api.md`, which was over the 50-line cap.
-- Built Phase 4 from the roadmap line: `apps/assistant` with snapshot, four read-only tools, tool loop and answer cache. Design is in `.claude/rules/assistant.md`. Published as BE-006, with a changelog entry, overview section and regenerated `openapi.yaml`.
-- `send()` and `generate()` gained `tool_choice` and `timeout`. `change_member_role` now deletes a demoted leader's thread.
-- Added `seed_demo` and `SEED_USER_PASSWORD`.
-- Corrected a misreading: "seeded data only" was never a restriction. See `.claude/rules/ai.md`.
-- At the user's request, added a push-only WebSocket at `/api/v1/ws/` for chat and notifications, replacing polling. Channels and Daphne, one process, in-memory layer, no Redis. Published as BE-007. Prod's start command is now Daphne, and `CONN_MAX_AGE` is 0. Decisions are in `.claude/rules/api.md`, limits in `api-limits.md`.
-- The user left the next calls to the agent: polling only as a fallback (BE-008), the scheduler inside the server for now, and no Redis until there's more than one process. Scaling steps are in `README.md`. At the user's request, D-016 went into `docs/decisions.md` and `TODO.md` was updated.
-- With the user's approval: `migrate assistant` and `seed_demo` ran on `main`, and 15 Gemini requests were spent. `main` now has 5 users, the Demo Team of 4, 10 tasks, 3 comments and 3 messages. Both test threads were cleared.
+- Built Phase 5 from the roadmap line, with no detailed prompt: a `search` tool on the existing tool loop. Design is in `.claude/rules/retrieval.md`.
+- New `apps/assistant/retrieval.py`, `Embedding` model, `manage.py embed_pending`. `embed()` joined `generate()` in the gateway, and the limits now count per model, with `AI_EMBEDDING_*` settings of their own.
+- The user chose search-time embedding over `on_commit`. Recorded as D-017, which supersedes D-003 for re-embedding, and the `CLAUDE.md` line changed to match.
+- `gemini-embedding-2` at 768 dimensions, chosen by probing both models. One request holds documents and a query. No vector index, on purpose.
+- No endpoint changed, so no changelog entry or inbox notice. The generated schema matches `docs/api/openapi.yaml` exactly.
+- With the user's approval: `migrate` and `embed_pending` ran on `main`, and all 16 Demo Team items are embedded. Test threads were cleared, and the Demo Team has none.
+- Gemini use: 20 requests through the app, logged in `AICall` (13 chat, 7 embedding), against about 13 estimated when the user approved. Plus 5 embedding requests in direct probes with made-up text, not logged.
 
 ## Verification
 
-- Phase 4: the full suite ran 442 passed, against faked Gemini on the test branch. Only the system prompt's wording changed after that, and the assistant and AI test files were rerun, not the whole suite. Ruff, `makemigrations --check` and `spectacular --validate --fail-on-warn` are clean. `openapi.yaml` gained 138 lines and lost none.
-- 20 of 20 deliberate breaks were caught, each removing one safeguard, including role scoping, thread privacy and each cache rule. One break first produced invalid Python and was redone. The django-reviewer pass found one defect, now fixed: `get_task` cut the description it promised in full.
-- Live, on `runserver` with real JWTs and real Gemini, as a leader and a member, 15 requests, all `succeeded`: snapshot answers, the cache spending no request, tools, history replay without thought steps, `tool_choice: "none"` after function steps, `is_error`, 401 with no token, and `DELETE`. Answers were read by hand and match the seeded data. A member got none of a teammate's work, even when told to ignore its instructions.
-- That run found a real bug the check first passed: the prompt made the model refuse the asker's own request. Fixed and retested live. The member and injection questions ran on the old wording, but their limits are enforced in Python.
-- Socket: the full suite ran 463 passed after the last change, and ruff, migrations and the schema check are clean. 13 of 13 deliberate breaks were caught.
-- Socket, on real Daphne with real `websockets` clients and a throwaway SQLite file, so `main` wasn't touched: a real cookie login connected, and a message arrived in 297 ms with the same shape as REST. A stranger heard nothing, a removed member stopped hearing on an open socket, and a login cookie from another origin was refused.
-- Not tested: text planted in a comment against the live model, `check --deploy`, a real browser or phone on the socket, Daphne on Linux, and sockets on Neon rather than SQLite, apart from the test suite.
+- Full suite: 525 passed. Only the `search` tool's description changed after that, and the retrieval and assistant test files were rerun, not the whole suite. Ruff, `makemigrations --check` and `spectacular --validate --fail-on-warn` are clean.
+- 41 of 41 deliberate breaks caught, each removing one safeguard. 4 were missed at first, all real test gaps, now fixed: limits counted per model, chat from another team, ranking, and the command on a provider failure.
+- The django-reviewer pass found no defects, and led to a query-count test, proved by 4 of the 41 breaks.
+- Live on `main` through `services.ask`, six questions as a leader and a member, answers read by hand: a snapshot question spent no embedding request, the model chose `search` for the other five, an Arabic question found an English comment, a vector deleted first was rebuilt and matched in that same request, and a missing subject invented nothing. A member's results held nothing from a teammate's task.
+- That run found a real defect: a member was told nobody had mentioned DNS, when a comment they can't see had. Fixed in the tool's description and retested live: "I found nothing about DNS access."
+- Not tested: the HTTP layer on this path, which didn't change, `search` with text planted in a comment, and any team with real volume. One answer took 15.4 seconds: see `.claude/rules/retrieval.md`.
 
-- Live on Gemini with the user's key, through `provider.send`: plain reply, tool request, and a tool round trip replaying `reply.steps` with their thought step. All worked on `gemini-3.5-flash-lite`. These checks used 11 requests.
-- The default model changed from `gemini-3.8-flash` after its first real request hit the 25-second limit. Measurements are in `.claude/rules/ai.md`.
-- `migrate ai` ran on `main` with the user's approval. `migrate ai --plan` showed only `Create model AICall`.
-- One real `generate()` call on `main` replied `OK.` and logged row 1 as `succeeded`, at 7 tokens and 1375 ms. The row was read from the database, not from the admin page.
-- After the error and request ID work, the full suite ran 315 passed and 1 failed. The failure was the middleware-order test, which pinned the old order. Only that test's assertion changed afterwards, and it was rerun alone, not the whole suite. No production code changed after the full run.
-- 11 of 11 deliberate breaks were caught, including a private view losing `IsAuthenticated` and an unlisted public route. One was missed at first, which added the `user_inactive` test.
-- A throwaway probe sent 240 requests to the 16 protected routes with no token and bad tokens, all 401, and 146 malformed requests, with no 500 and no body outside the documented shapes.
-- Not run: a real server, and `check --deploy` this session.
+## Earlier work, still true
+
+- Phases 3 and 4 and the socket were checked live. Details are in `.claude/rules/ai.md`, `assistant.md` and `api.md`.
+- Never tested: text planted in a comment against the live model, `check --deploy`, a real browser or phone on the socket, Daphne on Linux, and sockets on Neon rather than SQLite, apart from the test suite.
+- `main` has 5 users, the Demo Team of 4, 10 tasks, 3 comments and 3 messages, and 16 `Embedding` rows.
 
 ## In progress
 
@@ -54,10 +40,10 @@ Nothing.
 ## Next steps
 
 1. User commits this session's changes.
-2. Phase 5: RAG. The user wants it to work from the signed-in user's actual data, like the chatbot. The tool loop and scoping are ready to reuse. Set `SEED_USER_PASSWORD` in `.env` and rerun `seed_demo` before anyone logs in as a demo account.
+2. Phase 6: monthly AI reports. Set `SEED_USER_PASSWORD` in `.env` and rerun `seed_demo` before anyone logs in as a demo account.
 3. When the user clears the billing lock, run the Backend workflow, because Phases 1 to 3 have never run in CI.
 4. Mobile must confirm on a device that `Authorization` reaches the socket. The React Native JavaScript passes headers through, but its native layers weren't checked. `gunicorn` is unused now, so remove it when the host is chosen.
-5. For Phase 8 (deployment): start the scheduler inside the Daphne process, as `.claude/rules/scheduling.md` decides. The host must run one always-on Daphne process, and its `/api/*` proxy must forward WebSocket upgrades, or web runs on the polling fallback until a ticket endpoint exists. Hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api-limits.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`.
+5. For Phase 8 (deployment): start the scheduler inside the Daphne process, as `.claude/rules/scheduling.md` decides. The host must run one always-on Daphne process, and its `/api/*` proxy must forward WebSocket upgrades, or web runs on the polling fallback until a ticket endpoint exists. Hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api-limits.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`. Run `embed_pending` once after the first deploy.
 
 ## Blockers / waiting on other agents
 
@@ -66,7 +52,8 @@ Nothing.
 - `docs/` reads may need `/add-dir D:\work\Nesma-Airlines\docs` at session start. `.claude/settings.json` lists the folder, but reads were refused until that command ran.
 - Agents can't read or edit `.env`.
 - Audit items still open, none started: rollback and smoke steps, dependency scan in CI, and removing boilerplate docstrings.
-- `.claude/rules/architecture.md` is 56 lines, over the 50-line cap. Splitting it needs a new row, and `brain.md` has room for only one more line before its own cap.
+- `.claude/rules/architecture.md` is 57 lines, over the 50-line cap. `brain.md` is at its cap of 30, so splitting it means freeing a line there first.
+- Open with the user: once a team searches, all of its tasks, comments and chat go to Google on free-tier terms, which allow human review. See `.claude/rules/ai.md`.
 
 ## Inbox processed up to
 
@@ -77,3 +64,4 @@ None: the inbox was empty on 2026-11-02.
 - 2026-11-02: error codes, request IDs and a route guard test added before Phase 4.
 - 2026-11-02: Phase 4 chatbot built, migrated, seeded, checked live and ticked.
 - 2026-11-02: live socket for chat and notifications added.
+- 2026-11-02: Phase 5 RAG built, migrated, embedded, checked live and ticked.

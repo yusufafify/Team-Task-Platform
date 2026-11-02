@@ -1,4 +1,5 @@
 import factory
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from factory.django import DjangoModelFactory
@@ -74,4 +75,5 @@ class AICallFactory(DjangoModelFactory):
         model = AICall
 
     feature = AICall.Feature.CHAT
-    model = "gemini-test"
+    # The configured model, because the limits count one model's calls.
+    model = factory.LazyFunction(lambda: settings.AI_MODEL)

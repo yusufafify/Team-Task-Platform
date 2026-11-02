@@ -229,6 +229,7 @@ def test_ask_sends_the_snapshot_and_the_tools(team, leader, model):
         "get_task",
         "get_stats",
         "recent_messages",
+        "search",
     }
     assert request["tool_choice"] is None
 

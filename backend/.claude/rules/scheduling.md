@@ -18,3 +18,4 @@ How scheduled work runs (D-015, D-016). Nothing here is built yet; Phase 8 build
 - A sleep or restart skips runs. Each job selects what's due and not yet done, never one time slot, so the next run catches up.
 - Two schedulers can overlap during a deploy, so enforce run-once in the database, with a unique constraint or a sent marker, not by timing.
 - Schedule simplejwt's `flushexpiredtokens` daily. The token tables grow with every login and refresh, and nothing else clears them.
+- `embed_pending` is optional here: searches embed as they go, so it only shortens a backlog. Hourly at most, and each run with work to do spends embedding requests.

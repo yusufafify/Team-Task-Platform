@@ -8,6 +8,7 @@ class AICall(models.Model):
     class Feature(models.TextChoices):
         CHAT = "chat", "Chat"
         REPORT = "report", "Report"
+        EMBED = "embed", "Embedding"
 
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"

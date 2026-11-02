@@ -1,8 +1,9 @@
 """The only functions the model can call.
 
-They read and never write, so text planted in a comment can't make the model change anything. The
-asker and team come from the request, so the model has no way to name another team. Each tool calls
-the same scoped services as the views, and a refusal goes back to the model as a tool result.
+None can change team data, so text planted in a comment can't make the model change anything. The
+only thing written is `search` keeping its own vectors current. The asker and team come from the
+request, so the model has no way to name another team. Each tool calls the same scoped services as
+the views, and a refusal goes back to the model as a tool result.
 """
 
 import json
@@ -17,6 +18,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException, NotFound
 from rest_framework.generics import get_object_or_404
 
+from apps.assistant import retrieval
+from apps.assistant.models import Embedding
 from apps.chat.services import team_messages
 from apps.tasks.models import Task
 from apps.tasks.serializers import StatsQuerySerializer, TaskFilterSerializer
@@ -30,6 +33,10 @@ MAX_TEXT = 500
 
 class TaskIdSerializer(serializers.Serializer):
     task_id = serializers.IntegerField()
+
+
+class SearchSerializer(serializers.Serializer):
+    query = serializers.CharField(max_length=500)
 
 
 def display_name(user: User) -> str:
@@ -118,6 +125,27 @@ def recent_messages(user: User, team: Team, arguments: Any) -> dict:
     }
 
 
+def _search_row(hit: Embedding, zone: ZoneInfo) -> dict:
+    if hit.task:
+        return {"kind": "task", **task_row(hit.task, zone)}
+    source = hit.comment or hit.message
+    row = {
+        "kind": "comment" if hit.comment else "message",
+        "author": display_name(source.author),
+        "sent": _local(source.created_at, zone),
+        "body": source.body[:MAX_TEXT],
+    }
+    if hit.comment:
+        row["task"] = {"id": hit.comment.task_id, "title": hit.comment.task.title}
+    return row
+
+
+def search(user: User, team: Team, arguments: Any) -> dict:
+    hits = retrieval.search(user, team, _valid(SearchSerializer, arguments)["query"])
+    zone = ZoneInfo(team.timezone)
+    return {"results": [_search_row(hit, zone) for hit in hits]}
+
+
 TOOLS = {
     "list_tasks": (
         list_tasks,
@@ -176,6 +204,29 @@ TOOLS = {
                 "has no chat."
             ),
             "parameters": {"type": "object", "properties": {}},
+        },
+    ),
+    "search": (
+        search,
+        {
+            "description": (
+                "Search tasks, comments and team chat by meaning, including done tasks and old "
+                "chat the other tools can't reach. Use it for what was said, decided or reported "
+                "about a subject, when you don't know which task holds it. Returns the "
+                f"{retrieval.MAX_RESULTS} closest matches, best first. Some may be unrelated, so "
+                "ignore those. It covers only what this person may see, so when nothing fits, say "
+                "you found nothing, never that nobody said it or that it doesn't exist."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "A short phrase describing what to find.",
+                    }
+                },
+                "required": ["query"],
+            },
         },
     ),
 }

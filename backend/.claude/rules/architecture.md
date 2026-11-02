@@ -53,4 +53,5 @@ What's built, where it lives, and how it's configured.
 | `GEMINI_API_KEY` | Needed only by AI features | Required |
 | `AI_MODEL` | Default `gemini-3.5-flash-lite` | Same |
 | `AI_REQUESTS_PER_MINUTE`, `_PER_DAY`, `_PER_USER_PER_DAY` | Defaults 10, 200, 30 | Same |
+| `AI_EMBEDDING_MODEL`, `AI_EMBEDDING_REQUESTS_PER_MINUTE`, `_PER_DAY` | Defaults `gemini-embedding-2`, 30, 500 | Same |
 | `SEED_USER_PASSWORD` | Optional, for `seed_demo` logins | Same |

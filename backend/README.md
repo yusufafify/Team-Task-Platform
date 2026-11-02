@@ -38,6 +38,8 @@ uv run python manage.py runserver
 
 `uv run python manage.py seed_demo` creates or refreshes a demo team of four people with tasks, comments and chat, so the app has data before any client can add it. It writes to the same branch. Set `SEED_USER_PASSWORD` first, or the accounts can't log in. The leader is `mona@demo.example`, and the members are `sara@`, `omar@` and `nour@` on the same domain.
 
+`uv run python manage.py embed_pending` makes existing tasks, comments and chat searchable for the assistant. Searches do this themselves, 50 items at a time, so run it after the first migration and after changing `AI_EMBEDDING_MODEL`. It sends that text to Gemini and spends embedding requests, and it's safe to rerun.
+
 ## Lint and format
 
 ```powershell

@@ -14,10 +14,11 @@ from rest_framework.exceptions import Throttled
 
 from apps.ai import provider
 from apps.ai.models import AICall
-from apps.ai.services import AIUnavailable, generate
+from apps.ai.services import AIUnavailable, embed, generate
 from tests.factories import AICallFactory, UserFactory
 
 CHAT = AICall.Feature.CHAT
+EMBED = AICall.Feature.EMBED
 REPLY = provider.Reply(
     status="completed", text="Hello", steps=[], input_tokens=10, output_tokens=2, total_tokens=15
 )
@@ -31,7 +32,22 @@ def limits(settings):
     settings.AI_REQUESTS_PER_MINUTE = 100
     settings.AI_REQUESTS_PER_DAY = 100
     settings.AI_REQUESTS_PER_USER_PER_DAY = 100
+    settings.AI_EMBEDDING_REQUESTS_PER_MINUTE = 100
+    settings.AI_EMBEDDING_REQUESTS_PER_DAY = 100
     return settings
+
+
+@pytest.fixture
+def embedder(monkeypatch):
+    """Stands in for Gemini's embedding call, and records every batch that reached it."""
+    batches = []
+
+    def fake_embed(texts, **options):
+        batches.append(texts)
+        return [[0.5, 0.5] for _ in texts]
+
+    monkeypatch.setattr(provider, "embed", fake_embed)
+    return batches
 
 
 @pytest.fixture
@@ -270,6 +286,124 @@ def test_concurrent_calls_cannot_overrun_a_limit(limits, send):
     assert AICall.objects.count() == 2
 
 
+# embed: the same limits and log, on the embedding model's own quota
+
+
+@pytest.mark.django_db
+def test_embed_returns_vectors_and_logs_the_call_without_its_text(limits, embedder, team, member):
+    vectors = embed(["secret plan"], dimensions=2, user=member, team=team)
+
+    assert vectors == [[0.5, 0.5]]
+    call = AICall.objects.get()
+    assert call.feature == EMBED
+    assert call.model == limits.AI_EMBEDDING_MODEL
+    assert call.status == AICall.Status.SUCCEEDED
+    assert (call.user, call.team) == (member, team)
+    assert "secret plan" not in str(model_to_dict(call))
+
+
+@pytest.mark.django_db
+def test_embed_passes_its_options_to_the_provider(limits, monkeypatch):
+    received = {}
+
+    def fake_embed(texts, **options):
+        received.update(options)
+        return [[1.0]]
+
+    monkeypatch.setattr(provider, "embed", fake_embed)
+
+    embed(["hi"], dimensions=1, timeout=4.0)
+
+    assert received == {"dimensions": 1, "timeout": 4.0}
+
+
+@pytest.mark.django_db
+def test_chat_and_embedding_count_separately(limits, send, embedder):
+    # Both at 1, so a call counted against the other model's quota would be refused.
+    limits.AI_REQUESTS_PER_MINUTE = 1
+    limits.AI_EMBEDDING_REQUESTS_PER_MINUTE = 1
+
+    generate(CHAT, "hi")
+    embed(["hi"], dimensions=2)
+
+    assert len(send) == 1
+    assert len(embedder) == 1
+
+
+@pytest.mark.django_db
+def test_embedding_does_not_use_up_the_chat_day(limits, send, embedder):
+    limits.AI_REQUESTS_PER_DAY = 1
+    limits.AI_EMBEDDING_REQUESTS_PER_DAY = 1
+
+    embed(["hi"], dimensions=2)
+    generate(CHAT, "hi")
+
+    assert len(send) == 1
+
+
+@pytest.mark.django_db
+def test_embed_minute_limit_stops_the_call_before_it_is_sent(limits, embedder):
+    limits.AI_EMBEDDING_REQUESTS_PER_MINUTE = 1
+    embed(["hi"], dimensions=2)
+
+    with pytest.raises(Throttled) as refusal:
+        embed(["hi"], dimensions=2)
+
+    assert refusal.value.wait == 60
+    assert len(embedder) == 1
+
+
+@pytest.mark.django_db
+def test_embed_day_limit_stops_the_call_until_midnight_pacific(limits, embedder, clock):
+    clock(NOON)
+    limits.AI_EMBEDDING_REQUESTS_PER_DAY = 1
+    embed(["hi"], dimensions=2)
+
+    with pytest.raises(Throttled) as refusal:
+        embed(["hi"], dimensions=2)
+
+    assert refusal.value.wait == 12 * 3600
+    assert len(embedder) == 1
+
+
+@pytest.mark.django_db
+def test_embed_is_not_held_to_the_chat_limit_for_one_person(limits, embedder, member):
+    limits.AI_REQUESTS_PER_USER_PER_DAY = 0
+
+    embed(["hi"], dimensions=2, user=member)
+
+    assert len(embedder) == 1
+
+
+@pytest.mark.django_db
+def test_an_embed_failure_is_logged_and_hides_its_details(limits, monkeypatch):
+    def fail(texts, **options):
+        raise provider.ProviderError("key=abc rejected")
+
+    monkeypatch.setattr(provider, "embed", fail)
+
+    with pytest.raises(AIUnavailable) as refusal:
+        embed(["hi"], dimensions=2)
+
+    assert "abc" not in str(refusal.value.detail)
+    call = AICall.objects.get()
+    assert call.status == AICall.Status.FAILED
+    assert "rejected" in call.error
+
+
+@pytest.mark.django_db
+def test_the_providers_quota_refusal_on_embed_reads_as_throttling(limits, monkeypatch):
+    def refuse(texts, **options):
+        raise provider.QuotaExceeded("429")
+
+    monkeypatch.setattr(provider, "embed", refuse)
+
+    with pytest.raises(Throttled):
+        embed(["hi"], dimensions=2)
+
+    assert AICall.objects.get().status == AICall.Status.FAILED
+
+
 # provider: the real SDK, with only the HTTP transport faked
 
 
@@ -354,6 +488,70 @@ def test_send_never_retries_a_failure(gemini, answer, error):
         provider.send("hi")
 
     assert len(gemini.requests) == 1
+
+
+def embeddings(*vectors) -> tuple[int, dict]:
+    return 200, {"embeddings": [{"values": vector} for vector in vectors]}
+
+
+def test_embed_sends_one_request_and_gets_one_vector_per_text(gemini, settings):
+    gemini.answer = embeddings([0.1, 0.2], [0.3, 0.4])
+
+    vectors = provider.embed(["first", "second"], dimensions=2)
+
+    assert vectors == [[0.1, 0.2], [0.3, 0.4]]
+    assert len(gemini.requests) == 1
+    request = gemini.requests[0]
+    assert f"{settings.AI_EMBEDDING_MODEL}:batchEmbedContents" in str(request.url)
+    assert request.headers["x-goog-api-key"] == "test-only"
+    assert "test-only" not in str(request.url)
+    entries = json.loads(request.content)["requests"]
+    assert [entry["content"]["parts"][0]["text"] for entry in entries] == ["first", "second"]
+    assert all(entry["outputDimensionality"] == 2 for entry in entries)
+
+
+def test_embed_cannot_hold_a_worker_past_its_timeout(gemini):
+    gemini.answer = embeddings([0.1])
+
+    provider.embed(["hi"], dimensions=1)
+
+    assert gemini.requests[0].extensions["timeout"]["read"] == provider.TIMEOUT_MS / 1000
+
+
+def test_embed_can_cut_a_request_short(gemini):
+    gemini.answer = embeddings([0.1])
+
+    provider.embed(["hi"], dimensions=1, timeout=5.5)
+
+    assert gemini.requests[0].extensions["timeout"]["read"] == 5.5
+
+
+@pytest.mark.parametrize(
+    ("answer", "error"),
+    [
+        ((429, {"error": {"message": "quota"}}), provider.QuotaExceeded),
+        ((503, {"error": {"message": "busy"}}), provider.ProviderError),
+        ((500, {"error": {"message": "broken"}}), provider.ProviderError),
+        ((400, {"error": {"message": "bad"}}), provider.ProviderError),
+        (httpx.ReadTimeout("slow"), provider.ProviderError),
+        (httpx.ConnectError("down"), provider.ProviderError),
+    ],
+)
+def test_embed_never_retries_a_failure(gemini, answer, error):
+    gemini.answer = answer
+
+    with pytest.raises(error):
+        provider.embed(["hi"], dimensions=1)
+
+    assert len(gemini.requests) == 1
+
+
+@pytest.mark.parametrize("answer", [embeddings([0.1]), (200, {})])
+def test_embed_refuses_a_reply_that_cannot_be_matched_to_its_texts(gemini, answer):
+    gemini.answer = answer
+
+    with pytest.raises(provider.ProviderError):
+        provider.embed(["first", "second"], dimensions=1)
 
 
 def test_send_never_follows_a_continuation(gemini):

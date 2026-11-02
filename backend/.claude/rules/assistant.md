@@ -15,7 +15,7 @@ The chatbot, in `apps/assistant`, on top of the `apps/ai` gateway. Built from th
 
 - `ask()`: build the snapshot, try the answer cache, run the tool loop, save. Nothing is saved unless it succeeds, so a failed question leaves no trace in the thread, and the client resends it.
 - Snapshot: what this person may see of one team, in the system text of every request, so most questions cost one request (D-006). It goes through `visible_tasks`, `team_stats` and `list_members`, so role scoping is the same as the API's.
-- Tools, in `tools.py`: `list_tasks`, `get_task`, `get_stats`, `recent_messages`. They reach what the snapshot leaves out, and the user and team come from the request, never from the model.
+- Tools, in `tools.py`: `list_tasks`, `get_task`, `get_stats`, `recent_messages`, and `search`, from `.claude/rules/retrieval.md`. They reach what the snapshot leaves out, and the user and team come from the request, never from the model.
 - A question spends at most 3 requests and 25 seconds. The last request sets `tool_choice: "none"`, so it must answer. The deadline is shared, because 3 full timeouts would pass a proxy's usual 30.
 
 ## Answer cache
