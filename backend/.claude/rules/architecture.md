@@ -18,7 +18,7 @@ What's built, where it lives, and how it's configured.
 - Dependency direction: `tasks` services import `notifications` and `teams` services. `teams` and `notifications` services import only `tasks.models`, which avoids a cycle.
 - Settings split: `base.py` holds shared values. `dev.py` and `prod.py` set `SECRET_KEY`, `ALLOWED_HOSTS`, `DATABASES` and `CORS_ALLOWED_ORIGINS`.
 - `DJANGO_SETTINGS_MODULE` in `.env` chooses dev or prod. `config/__init__.py` loads `.env` first, and `manage.py`, `wsgi.py` and `asgi.py` have no default, so they refuse to start without it. A variable set on the host wins over `.env`. pytest is pinned to `config.settings.test` in `pyproject.toml`.
-- Prod logs to the console at WARNING and up, with time, level and logger name, because Django's default console handler needs DEBUG on.
+- Prod logs to the console at WARNING and up, with time, level, logger name and request ID, because Django's default console handler needs DEBUG on.
 - DRF defaults: cookie then Bearer JWT authentication, `TrustedOrigin` and `IsAuthenticated`, drf-spectacular schema class, JSON-only, page size 20, throttle rates. `AUTH_COOKIE_SECURE` is off only in dev. Access tokens last 15 minutes, refresh tokens 7 days and rotate.
 - Cache: database backend, table `django_cache`.
 - Static files: whitenoise, with compressed manifest storage in prod only.
@@ -29,6 +29,7 @@ What's built, where it lives, and how it's configured.
 
 - `config/settings/`: settings package.
 - `config/urls.py`: admin, health checks, `/api/v1/` and the JSON error handlers. `config/views.py`: those handlers and the health views.
+- `config/exceptions.py`: DRF's `EXCEPTION_HANDLER`. `config/request_id.py`: the request ID middleware and log filter.
 - `apps/README.md`: what each app holds, and the one-app-per-domain rule.
 - `tests/factories.py`: shared factories. `tests/test_smoke.py`: settings load, and models match migrations.
 - `pyproject.toml`: dependencies, pytest and ruff config.

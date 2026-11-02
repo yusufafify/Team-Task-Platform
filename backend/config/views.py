@@ -3,15 +3,16 @@ from django.http import JsonResponse
 
 
 def bad_request(request, exception):
-    return JsonResponse({"detail": "Bad request."}, status=400)
+    return JsonResponse({"detail": "Bad request.", "code": "bad_request"}, status=400)
 
 
 def not_found(request, exception):
-    return JsonResponse({"detail": "Not found."}, status=404)
+    return JsonResponse({"detail": "Not found.", "code": "not_found"}, status=404)
 
 
 def server_error(request):
-    return JsonResponse({"detail": "Server error."}, status=500)
+    body = {"detail": "Server error.", "code": "server_error", "request_id": request.request_id}
+    return JsonResponse(body, status=500)
 
 
 def healthz(request):

@@ -184,7 +184,8 @@ def test_prod_logs_errors_to_the_console(tmp_path):
 
     result = run_with_env_file(tmp_path, env_file, args)
 
-    assert re.search(r"\d{4}-\d\d-\d\d \S+ ERROR django\.request probe-error", result.stderr)
+    # Outside a request the ID is "-", and the format must still work.
+    assert re.search(r"\d{4}-\d\d-\d\d \S+ ERROR django\.request \[-\] probe-error", result.stderr)
 
 
 def test_prod_takes_its_proxy_count_from_the_environment(tmp_path):

@@ -7,7 +7,8 @@ Index only: this is the one map of backend memory. Regions in `.claude/rules/` l
 | `.claude/handover.md` | Current state, next steps, blockers | Never | Every session start |
 | `.claude/roadmap.md` | The phases and what each delivers | Never | Planning or starting a phase |
 | `.claude/rules/architecture.md` | What's built, file map, environment variables | `config/`, `apps/`, `manage.py`, `.env.example` | Explaining how the project is built |
-| `.claude/rules/api.md` | API patterns, Phase 2 decisions, known limits | Views, serializers, urls, throttles | Designing an endpoint or changing auth |
+| `.claude/rules/api.md` | API patterns, error format, Phase 2 decisions | Views, serializers, urls, throttles | Designing an endpoint or changing auth |
+| `.claude/rules/api-limits.md` | Login limits, accepted risks, what isn't built | Views, urls, throttles | Changing auth, or planning Phase 8 hosting |
 | `.claude/rules/domain-model.md` | Schema choices and deletion tiers | Models, admin, services | Designing a model or a delete path |
 | `.claude/rules/scheduling.md` | How scheduled jobs run, and host and Neon limits | Management commands, `tasks.py` | Planning Phase 8, or choosing a host |
 | `.claude/rules/database.md` | Neon branches, connections, migrations | Models, migrations, settings, `manage.py`, `.env.example` | Running `migrate` or any database command |

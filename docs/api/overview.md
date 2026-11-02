@@ -51,9 +51,15 @@ There are no cookies here. The app keeps both tokens, in the device's encrypted 
 
 | Status | Body |
 |---|---|
-| 400 | `{"<field>": ["message"]}`, with `non_field_errors` for problems that aren't about one field |
-| 401, 403, 404, 405, 429, 500 | `{"detail": "message"}` |
+| 400, invalid fields | `{"<field>": ["message"]}`, with `non_field_errors` for problems that aren't about one field |
+| 400, unreadable JSON | `{"detail": "message", "code": "parse_error"}` |
+| 401, 403, 404, 405, 406, 415, 429, 503 | `{"detail": "message", "code": "<code>"}` |
+| 500 | `{"detail": "message", "code": "server_error", "request_id": "<id>"}` |
 
+- Branch on `code`, never on `detail`, which is written for people and may change.
+- 401 codes: `not_authenticated` (no token), `token_not_valid` (expired or bad), `no_active_account` (wrong email or password), `user_inactive` (the account was deactivated).
+- Other codes: `permission_denied`, `not_found`, `method_not_allowed`, `throttled` (wait for `Retry-After`), `ai_unavailable` (the assistant is down, so try later).
+- Every response carries an `X-Request-ID` header, and a 500 repeats it as `request_id`. Show that ID on an error screen, because it's how a report is matched to the server's logs.
 - 404 also means "not visible to you". Another team's data never answers 403, so clients can't tell whether it exists.
 - 403 means the requester can see the thing, but their role can't do that.
 

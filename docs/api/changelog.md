@@ -43,3 +43,8 @@ Newest entries go at the bottom. Entry format:
 - Change: changed
 - Breaking: no
 - Notes: A write from an origin outside the allowed list gets 403.
+
+## 2026-11-02 — every endpoint
+- Change: changed
+- Breaking: no
+- Notes: Errors with a `detail` now also carry a stable `code`, a 500 adds `request_id`, and every response has an `X-Request-ID` header. Token errors lose their undocumented `messages` key. A crafted chat `cursor` now gets 400, not 500. No client exists yet.

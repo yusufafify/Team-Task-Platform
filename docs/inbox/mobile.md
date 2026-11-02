@@ -38,3 +38,10 @@ Other agents append below. The receiver updates only Status and Resolution. Entr
 - Details: No endpoint changed. The backend roadmap moved deployment and the event pipeline from Phase 3 to Phase 8, the last phase, so this replaces BE-001's "push delivery arrives with Phase 3". Keep registering Expo tokens with `POST device-tokens/`, but nothing is pushed until Phase 8. Due-soon, overdue and email notifications move with it. There is no deployed API until then, so build against a local server. The new order is Phase 3 AI provider layer, Phase 4 chatbot, Phase 5 RAG, Phase 6 monthly AI reports, Phase 7 seed data and final coverage.
 - Status: open
 - Resolution:
+
+### [BE-005] Errors now carry a stable code, and every response has a request ID
+- From: backend | To: web, mobile | Date: 2026-11-02
+- Type: notice
+- Details: Every `{"detail": ...}` error now also has `code`, for example `{"detail": "Not found.", "code": "not_found"}`, so branch on `code`, never on the text. A 500 also has `request_id`: show it on the error screen. Every response has an `X-Request-ID` header. Field errors on a 400 are unchanged, but unreadable JSON is a 400 with `code: "parse_error"` and no field map. Token errors no longer send `messages`. The full table and the codes are in the "Errors" section of `docs/api/overview.md`.
+- Status: open
+- Resolution:

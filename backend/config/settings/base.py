@@ -37,6 +37,8 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
+    # First, so the ID exists even when another middleware fails, and `server_error` can read it.
+    "config.request_id.RequestIdMiddleware",
     # CORS must precede WhiteNoise, and WhiteNoise must directly follow SecurityMiddleware.
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -101,6 +103,7 @@ REST_FRAMEWORK = {
         "apps.accounts.permissions.TrustedOrigin",
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "EXCEPTION_HANDLER": "config.exceptions.api_exception_handler",
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],

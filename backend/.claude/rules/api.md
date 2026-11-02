@@ -24,10 +24,13 @@ How the Phase 2 API is built, and the choices made without a detailed phase prom
 - Notification failures are swallowed by `robust=True`, and only the logs show them. Keep variable text in `body`, because `title` holds 200 characters.
 - Write `completed_at` only when the status changes. A stale instance writing it alongside other edits breaks the database constraint.
 - In services, take `get_object_or_404` from `rest_framework.generics` for any id that isn't an `<int:>` path value. Django's raises `ValueError` on a non-numeric id.
+- Setting `permission_classes` on a view replaces the defaults, so it can make a view public by accident. `tests/test_api_platform.py` walks every URL and requires a 401 unless the route is in `PUBLIC_ROUTES`, so a new public route must join that list on purpose.
 
 ## Decisions
 
-- Error format: DRF's default, not RFC 9457. Django's own 400, 404 and 500 pages are replaced by `{"detail": ...}`.
+- Error format: `{"detail", "code"}` from `config/exceptions.py`, and a map of fields for invalid input, not RFC 9457: two first-party clients gain nothing from its media type. Django's own 400, 404 and 500 pages use the same shape, and a 500 adds `request_id`.
+- `config/exceptions.py` also turns Django's `ValidationError` into a 400. DRF's handler skips it, so a crafted cursor answered 500 (found 2026-11-02).
+- Auth has no middleware. `DEFAULT_PERMISSION_CLASSES` keeps every view private unless it opts out, and middleware would run before DRF's auth and need its own list of public routes. The one project middleware is `config/request_id.py`. It runs first, ignores any ID a client sends, and never resets the ID, because Django logs 4xx and 5xx responses after the middleware returns.
 - JSON-only renderers and parsers apply in every environment, so dev matches prod.
 - Registration is open, any user can create a team, and leaders add existing accounts by email. Invitations need email, so they wait for Phase 8 at least.
 - Members may change only `status`, and other fields are refused with 403, not ignored. Comments and messages can't be edited or deleted.
@@ -40,16 +43,3 @@ How the Phase 2 API is built, and the choices made without a detailed phase prom
 - A failed web refresh leaves cookies alone. Cookies are shared across tabs, so a second tab can lose the race, and clearing them would end the first tab's new session.
 - Stats period: whole days in the team's timezone, defaulting to the month so far. Stats and notifications live in existing apps, so there's no new app.
 - In-app notifications exist for assignment and comments. Phase 8 adds due-soon, overdue, email and push.
-
-## Limits
-
-- Login has three limits, in this order: 5/min per account and address, 20/min per address, 30/min per account. `LoginView.check_throttles` stops at the first refusal, because DRF otherwise counts refused requests too, and one address could use up the account's cap.
-- Seven or more addresses working together can still block an account's login for up to a minute. Accepted, because dropping the cap would leave distributed guessing unlimited.
-- Rotation has no reuse detection. A thief who refreshes first keeps a working chain, and the owner gets a 401 on their next refresh. `auth/logout-all/` ends it.
-- A logged-out access token keeps working for up to 15 minutes.
-- Throttles use the database cache, so each login costs extra queries. Don't add throttling to read endpoints without measuring.
-- Prod requires `DJANGO_NUM_PROXIES`, and it must match the real host, or the address limits can be forged.
-- Cookies need the web app and API on one site. A host's shared domain, such as `vercel.app`, usually counts as separate sites, and the project has no budget for a domain, so prod uses a free same-origin proxy: the web host forwards `/api/*` to the API. The proxy counts toward `DJANGO_NUM_PROXIES`, and the web origin must be in `CORS_ALLOWED_ORIGINS`.
-- The server can't make polling cheap: JWT auth loads the user from the database on every request, so each one restarts Neon's 5-minute suspend timer. A rate limit wouldn't help, because it hits the database too. The idle-stop rule in `overview.md` is the only control, and it relies on clients following it.
-- Registration and `add_member` reveal whether an email has an account. Login doesn't. Accepted for now.
-- Not built: password reset or change, email change, leaving a team, date filters on tasks.

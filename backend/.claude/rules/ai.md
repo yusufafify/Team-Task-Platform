@@ -16,6 +16,7 @@ How the LLM is reached. Built from the roadmap line, with no detailed phase prom
 - Limits are per minute, per day and per user per day, from environment variables. A day ends at midnight Pacific, when Gemini's quota resets. `user=None`, for reports, skips only the user limit. A refusal is DRF `Throttled` with `wait`, so `Retry-After` reaches clients.
 - Gemini's own 429 becomes `Throttled`. Other failures and unfinished replies become `AIUnavailable` (503). Only `completed` and `requires_action` reach the caller, so nothing acts on a truncated answer.
 - Phase 4's tool loop: pass the history as a list, then resend `[*history, *reply.steps, function_result]`. Steps go back unchanged, because thought steps carry signatures. `tests/test_ai.py` shows the shape.
+- Phase 4's tools call the same services, which raise HTTP errors. A tool must catch both `APIException` and `Http404`, because the task and team services use Django's `get_object_or_404`, and must validate ids from the LLM, because that function raises `ValueError` on a non-numeric id.
 
 ## Decisions
 

@@ -71,6 +71,6 @@ The Architecture section of `CLAUDE.md` wins over every skill.
 These aren't Architecture decisions, but the project's choices still win.
 
 - software-security-appsec and security-and-hardening prefer server sessions and warn against JWTs. The stack uses simplejwt. How the web app stores tokens is a Phase 2 decision.
-- software-backend wants RFC 9457 error bodies, which DRF doesn't produce by default. Decide the error format in Phase 2 and publish it through the changelog.
+- software-backend wants RFC 9457 error bodies. Decided: `{"detail", "code"}` instead, in `config/exceptions.py`, because two first-party clients gain nothing from its media type.
 - anti-over-engineer says no tests unless asked; solid and test-driven-development make them mandatory. Follow "Testing" in `CLAUDE.md`.
 - gemini-api-dev says Google stores interactions by default (55 days on paid, 1 day on free), and `store=False` disables `previous_interaction_id`. We use `store=False` and keep conversation history in Postgres.
