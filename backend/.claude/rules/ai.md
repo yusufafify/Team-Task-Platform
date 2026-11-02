@@ -42,4 +42,4 @@ How the LLM is reached. Built from the roadmap line, with no detailed phase prom
 - The chatbot and RAG always work from the signed-in user's actual data, on every team. "Seeded data" (user, 2026-11-02) only means test data we generate because no client can create data yet. It is not a restriction, so never gate a feature on it: seeded and real logins run the same flow.
 - The terms allow only paid services for clients offered to users in the EEA, Switzerland or the UK.
 - Limits are per Google project, so another app on the same project shares the quota and this count can't see it.
-- Search sends team text that nobody asked about: every task, comment and chat message on a team goes to Google once someone there searches. Chat only ever sent what a question touched. The free-tier terms above apply to all of it.
+- Search sends team text that nobody asked about: every task, comment and chat message on a team goes to Google once someone there searches. Chat only ever sent what a question touched. The free-tier terms above apply to all of it. The user accepted this on 2026-11-02, because this is a take-home project. Revisit it before real teams use the app.

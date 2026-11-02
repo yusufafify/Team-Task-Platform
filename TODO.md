@@ -16,7 +16,9 @@ What's left to do. For what exists today, see [README.md](README.md). Per-agent 
 - [x] Decide what data the chatbot sends to Gemini: the signed-in user's actual data. Seeded data is only test data
 - [x] Phase 4: chatbot: snapshot, tools and answer cache
 - [x] Live socket for chat and notifications, with polling only as a fallback
-- [ ] Phase 5: RAG with pgvector
+- [x] Phase 5: RAG with pgvector
+- [x] Set the `AI_EMBEDDING_*` limits in `backend/.env`
+- [x] Decide what team text may go to Google: fine on free-tier terms while this is a take-home project. Revisit before real teams use it
 - [ ] Phase 6: monthly AI reports
 - [ ] Phase 7: seed data and final coverage
 - [ ] Phase 8: deployment and event pipeline: email via Resend, Expo push, and scheduled jobs running inside the server process (D-016)

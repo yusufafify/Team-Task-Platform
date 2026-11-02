@@ -25,12 +25,15 @@ Hard cap about 80 lines.
 - The django-reviewer pass found no defects, and led to a query-count test, proved by 4 of the 41 breaks.
 - Live on `main` through `services.ask`, six questions as a leader and a member, answers read by hand: a snapshot question spent no embedding request, the model chose `search` for the other five, an Arabic question found an English comment, a vector deleted first was rebuilt and matched in that same request, and a missing subject invented nothing. A member's results held nothing from a teammate's task.
 - That run found a real defect: a member was told nobody had mentioned DNS, when a comment they can't see had. Fixed in the tool's description and retested live: "I found nothing about DNS access."
-- Not tested: the HTTP layer on this path, which didn't change, `search` with text planted in a comment, and any team with real volume. One answer took 15.4 seconds: see `.claude/rules/retrieval.md`.
+- Volume measured on the test branch at up to 20,000 synthetic items: search stays near 1 second, with no change needed. Figures are in `.claude/rules/retrieval.md`.
+- With the user's approval, on real Daphne with real JWTs on `main`, 12 more requests: 401 with no token, 404 off the team, a search answer over HTTP, and `DELETE`. One planted comment, removed afterwards, was obeyed on none of three questions. `main` was confirmed back to 3 comments, 16 embeddings and no threads.
+- One answer said "No, the project is not cancelled", which is more certain than the data allows. Left as is, because it came from one question: don't tune the prompt on one sample.
+- One answer took 15.4 seconds: see `.claude/rules/retrieval.md`.
 
 ## Earlier work, still true
 
 - Phases 3 and 4 and the socket were checked live. Details are in `.claude/rules/ai.md`, `assistant.md` and `api.md`.
-- Never tested: text planted in a comment against the live model, `check --deploy`, a real browser or phone on the socket, Daphne on Linux, and sockets on Neon rather than SQLite, apart from the test suite.
+- Never tested: `check --deploy`, a real browser or phone on the socket, Daphne on Linux, and sockets on Neon rather than SQLite, apart from the test suite.
 - `main` has 5 users, the Demo Team of 4, 10 tasks, 3 comments and 3 messages, and 16 `Embedding` rows.
 
 ## In progress
@@ -53,7 +56,6 @@ Nothing.
 - Agents can't read or edit `.env`.
 - Audit items still open, none started: rollback and smoke steps, dependency scan in CI, and removing boilerplate docstrings.
 - `.claude/rules/architecture.md` is 57 lines, over the 50-line cap. `brain.md` is at its cap of 30, so splitting it means freeing a line there first.
-- Open with the user: once a team searches, all of its tasks, comments and chat go to Google on free-tier terms, which allow human review. See `.claude/rules/ai.md`.
 
 ## Inbox processed up to
 

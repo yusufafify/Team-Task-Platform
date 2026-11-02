@@ -23,6 +23,8 @@ Phase 5 RAG: the `search` tool, in `apps/assistant/retrieval.py`. Built from the
 - Search-time embedding, not `on_commit` (D-017). Nothing on the write path can fail or slow down, and admin edits and seed data can't be missed, because nothing depends on a hook.
 - `gemini-embedding-2` at 768 dimensions. In a probe on 2026-11-02, one request held documents and a query, each in its own `Content`, at 718 ms, and an Arabic query matched English text. `gemini-embedding-001` needs two requests, because `task_type` is set per call.
 - No vector index, on purpose. An HNSW index filters after ranking, so a member with a narrow view could get few results. Ranking one team's rows is exact, and `team` has an index. Add HNSW with `hnsw.iterative_scan` if a team gets slow.
+- Measured 2026-11-02 on the Neon test branch, with synthetic vectors and the embedding call faked: a whole search took 0.86 seconds at 1,000 items and 0.97 at 20,000, mostly round trips rather than ranking. Finding what's new took 0.18 and 0.23. The data had just been written, so it was cached: a cold read may be slower.
+- Each item costs about 4 KB on disk, so storage is likely to run out before speed does. Check Neon's limit before a team gets large.
 - A row per source, with no chunking, and text cut at 2000 characters. Long pasted documents are only searchable from the start.
 - `BATCH` is 50 because the worst case, 50 texts of 2000 characters, took 1.9 seconds on the free tier (2026-11-02), inside the tool's 8-second timeout. Gemini refuses over 100 in one request with a 400.
 - A source deleted while a request is out raises `IntegrityError` at commit. `_store` drops that write, and the next search redoes it.
