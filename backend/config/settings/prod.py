@@ -6,13 +6,9 @@ from .base import REST_FRAMEWORK, env
 DEBUG = False
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
-# Reuse avoids a TLS handshake per request. Neon drops connections when it suspends, so check them.
-# shortcut: WSGI only, set CONN_MAX_AGE to 0 if chat moves to ASGI, as Django's docs say.
+# No CONN_MAX_AGE: Django's docs say to leave connections unpersisted under ASGI.
 # Neon's pooler is PgBouncer in transaction mode, which can't keep a server-side cursor open.
-DATABASES = {
-    "default": env.db("DATABASE_URL")
-    | {"CONN_MAX_AGE": 60, "CONN_HEALTH_CHECKS": True, "DISABLE_SERVER_SIDE_CURSORS": True}
-}
+DATABASES = {"default": env.db("DATABASE_URL") | {"DISABLE_SERVER_SIDE_CURSORS": True}}
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")
 GEMINI_API_KEY = env("GEMINI_API_KEY")
 

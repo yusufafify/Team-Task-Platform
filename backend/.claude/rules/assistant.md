@@ -16,7 +16,7 @@ The chatbot, in `apps/assistant`, on top of the `apps/ai` gateway. Built from th
 - `ask()`: build the snapshot, try the answer cache, run the tool loop, save. Nothing is saved unless it succeeds, so a failed question leaves no trace in the thread, and the client resends it.
 - Snapshot: what this person may see of one team, in the system text of every request, so most questions cost one request (D-006). It goes through `visible_tasks`, `team_stats` and `list_members`, so role scoping is the same as the API's.
 - Tools, in `tools.py`: `list_tasks`, `get_task`, `get_stats`, `recent_messages`. They reach what the snapshot leaves out, and the user and team come from the request, never from the model.
-- A question spends at most 3 requests and 25 seconds. The last request sets `tool_choice: "none"`, so it must answer. The deadline is shared, because 3 full timeouts would pass gunicorn's 30.
+- A question spends at most 3 requests and 25 seconds. The last request sets `tool_choice: "none"`, so it must answer. The deadline is shared, because 3 full timeouts would pass a proxy's usual 30.
 
 ## Answer cache
 
@@ -41,7 +41,7 @@ The chatbot, in `apps/assistant`, on top of the `apps/ai` gateway. Built from th
 
 ## Open
 
-- A question holds a gunicorn worker for up to 25 seconds, so Phase 8 should use threaded workers.
+- A question ties up a thread for up to 25 seconds. Django's ASGI handler gives each request its own, so it shouldn't block others, but that comes from reading its source, not a load test.
 - Over `runserver` on a dev machine, a cached answer took 3.3 seconds with no Gemini call, and a full answer 4 to 7. Gemini took about 1 second and the snapshot 0.55 (9 queries, 60 ms each to Neon). The rest is unmeasured: likely a new connection per request, which prod reuses. Measure on the real host in Phase 8.
 - Cached answers skip the AI limits, so repeating a question adds two rows each time with no limit. Team chat is equally open. Add a throttle if a table grows.
 - The answer arrives whole, with no streaming, because the server is WSGI.

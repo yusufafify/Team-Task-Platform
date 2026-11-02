@@ -53,3 +53,8 @@ Newest entries go at the bottom. Entry format:
 - Change: added
 - Breaking: no
 - Notes: The AI assistant. `POST` asks a question and returns `{question, answer, cached}`, `GET` lists the requester's private thread, and `DELETE` clears it. It can answer 429 `throttled` and 503 `ai_unavailable`. Answers are plain text. No existing endpoint changed.
+
+## 2026-11-02 — `/api/v1/ws/` (WebSocket)
+- Change: added
+- Breaking: no
+- Notes: A live socket that delivers `message` and `notification` events, with the same `data` shapes as REST. Close code `4401` means refresh and reconnect. Polling chat is replaced. WebSockets aren't part of `openapi.yaml`, so the contract is in `overview.md`.

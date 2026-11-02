@@ -8,8 +8,8 @@ from google import genai
 from google.genai import types
 from google.genai._interactions import APIError, RateLimitError
 
-# Stays under gunicorn's 30-second worker timeout.
-# Monthly reports may need longer. They run outside gunicorn, so pass `timeout` to send() then.
+# Stays under the 30 seconds that hosts and proxies commonly allow a request.
+# Monthly reports may need longer. They run outside a request, so pass `timeout` to send() then.
 TIMEOUT_MS = 25_000
 
 

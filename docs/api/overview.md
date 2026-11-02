@@ -73,13 +73,30 @@ There are no cookies here. The app keeps both tokens, in the device's encrypted 
 
 ## Chat and notifications
 
-- There's no WebSocket. To get new messages, poll the first page of `teams/{id}/messages/` and merge by `id`.
-- Every authenticated request reads the database, which can suspend only after 5 minutes with no requests at all. Its free compute hours are limited, so these polling rules are required:
-  - Poll chat every 10 seconds at most, only while the chat screen is visible.
-  - Stop polling after 2 minutes with no user input, and resume on the next input or focus.
-  - Don't run any timer while the app is in the background or the tab is hidden.
+- New messages and notifications arrive on the live socket below, so never poll for them. Every request reads the database, whose free compute hours are limited.
 - `GET notifications/?unread=true` gives the badge count in `count`. Fetch it on app open, on focus and on screen changes, with no timer of its own.
 - A notification is created when a task is assigned, and when someone comments on a task you created or are assigned to. Its `title` is a fixed phrase, its `body` is the task's title. Due-soon, overdue, email and push arrive with Phase 8.
+
+### Live socket
+
+Open one WebSocket per signed-in person, at `/api/v1/ws/`. It covers all of that person's teams, so there's nothing to subscribe to. It only delivers: keep sending messages with `POST`, and anything a client sends on the socket is ignored.
+
+- Web: `new WebSocket()` on the same domain as the app, using `wss:` in prod. The login cookie goes with it, and the page's origin must be an allowed one.
+- Mobile: send `Authorization: Bearer <access>` in the constructor's third argument, `{headers: {...}}`.
+
+Each event is JSON with a `type` and `data`, and `data` has the same shape as the REST API returns:
+
+```json
+{"type": "message", "data": {"id": 7, "team": 1, "author": {"id": 2, "email": "...", "first_name": "...", "last_name": "..."}, "body": "Hello", "created_at": "..."}}
+{"type": "notification", "data": {"id": 9, "kind": "task_commented", "title": "...", "body": "...", "task": 4, "read_at": null, "created_at": "..."}}
+```
+
+- The socket can miss events, and the server keeps nothing for it, so REST stays the source of truth. After every connect, fetch the first page of `teams/{id}/messages/` for the open chat and the unread count, then merge by `id`. The same event can arrive twice, including your own message after you post it.
+- Close code `4401` means the token is missing or expired. Call refresh, then reconnect. It also arrives on a connected socket: a token isn't checked again until the next event, so a socket can stay open and quiet after its token expires. Closing is how you learn, and the fetch after reconnecting recovers that event.
+- Any other drop means reconnect: wait 1 second, double it each try up to 30, and add up to 20% random jitter.
+- On mobile, close the socket when the app goes to the background and reconnect on return. On web, reconnect when a hidden tab comes back if the socket has dropped.
+- Show when the socket is down, because new messages won't appear until it's back.
+- Someone removed from a team stops getting its events at once. Their socket stays open for their other teams.
 - `POST device-tokens/` stores an Expo token. A token already on another account moves to the requester.
 
 ## Assistant

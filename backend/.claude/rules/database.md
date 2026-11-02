@@ -13,7 +13,7 @@ Neon branches, connections and migrations.
 
 - Neon branches: `main` serves both local work and prod, by the user's decision, and `test` hosts pytest's temporary `test_neondb`. `config/settings/test.py` reads `TEST_DATABASE_URL` with no fallback, and refuses a pooled host or the `DATABASE_URL` endpoint.
 - Neon connections follow the Elyria project: the app uses pooled `DATABASE_URL`, with `DISABLE_SERVER_SIDE_CURSORS` on because the pooler runs in transaction mode. `manage.py` swaps in `DIRECT_URL` for `migrate`, falling back to `DATABASE_URL`. gunicorn and pytest never pass through that swap. `TEST_DATABASE_URL` stays direct.
-- Prod reuses connections to the pooler for 60 seconds with health checks. Set `CONN_MAX_AGE` to 0 if chat moves to ASGI.
+- Prod serves ASGI, so it opens a connection per request and `CONN_MAX_AGE` stays 0, as Django's docs say. Consumers must use `database_sync_to_async`, which closes old connections. An idle socket holds none.
 - `AUTH_USER_MODEL` is `accounts.User`. Swapping the user model after the first migration is painful.
 - A migration reaches each branch in its own step: `pytest` applies it for tests, and `migrate` updates `main`. There's no separate dev database, so a local `migrate` or data change reaches prod.
 - After the first `migrate`, run `uv run python manage.py createcachetable`, or database cache calls fail.

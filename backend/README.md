@@ -120,10 +120,10 @@ uv run --no-sync python manage.py createcachetable
 ### Start
 
 ```shell
-uv run --no-sync gunicorn config.wsgi --bind 0.0.0.0:$PORT
+uv run --no-sync daphne -b 0.0.0.0 -p $PORT config.asgi:application
 ```
 
-Most hosts provide `$PORT`. gunicorn doesn't run on Windows, so use `runserver` locally.
+Most hosts provide `$PORT`. Run exactly one server process, because the live socket's channels live in that process's memory. A second one would miss events sent through the first. `runserver` uses the same server locally.
 
 ### HTTPS
 

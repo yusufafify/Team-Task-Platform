@@ -22,7 +22,7 @@ How the LLM is reached. Built from the roadmap line, with no detailed phase prom
 
 - Gemini only, through the Interactions API. No fallback provider, because a second provider means a second key and quota nobody asked for. Changing provider means changing `provider.py`.
 - Default model `gemini-3.5-flash-lite`, chosen by measuring. On the free tier on 2026-11-02, two runs of the same prompt took 0.7 to 1.6 seconds, against 11 to 19 on `gemini-3.1-flash-lite` and 93 to 106 on `gemini-3.8-flash`, which also used about 15 times the tokens. The network was fine, at 0.4 seconds for HTTPS.
-- `TIMEOUT_MS` stays at 25 seconds, under gunicorn's 30, so a slower model needs that limit raised too.
+- `TIMEOUT_MS` stays at 25 seconds, under the 30 that hosts and proxies commonly allow a request. Daphne sets no limit of its own.
 - `store=False`: history lives in Postgres, so Google needn't keep team data. This rules out `previous_interaction_id` and `background=True`.
 - The log holds no prompt or reply, so team data stays out of it and out of the admin. It has no purge job, because it grows by at most the daily limit.
 - Plain text and `tools` only for now, plus `tool_choice`, which sits inside `generation_config`. Structured output (`response_format`) waits for a caller. `temperature` is deprecated in this API, so don't add it.

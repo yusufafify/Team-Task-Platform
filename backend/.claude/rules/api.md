@@ -34,7 +34,10 @@ How the Phase 2 API is built, and the choices made without a detailed phase prom
 - JSON-only renderers and parsers apply in every environment, so dev matches prod.
 - Registration is open, any user can create a team, and leaders add existing accounts by email. Invitations need email, so they wait for Phase 8 at least.
 - Members may change only `status`, and other fields are refused with 403, not ignored. Comments and messages can't be edited or deleted.
-- Chat transport is REST polling, because the server is WSGI with no broker. Cursor pagination keeps pages stable while messages arrive.
+- Live events: one push-only WebSocket per person at `/api/v1/ws/`, on Channels and Daphne (user's decision, 2026-11-02). `apps/notifications/consumers.py` is the consumer, and `push()` in its services is the only sender. REST stays the source of truth, and writes stay on REST, so permissions aren't duplicated.
+- One group per user, with no team groups: a message reads the team's members when sent, so removal takes effect at once with no unsubscribe code. It costs one query per message.
+- Socket auth: Bearer from any origin, because a page script can't set that header. A cookie counts only with an `Origin` in `CORS_ALLOWED_ORIGINS`, because browsers attach cookies by themselves. React Native may send its own `Origin`, so don't apply the check to Bearer.
+- A socket outlives its token, so `deliver` checks expiry and closes with 4401, and no timer is needed. Daphne pings every 20 seconds and drops silent clients after 30, so no heartbeat code exists.
 - Web: both tokens sit in `HttpOnly`, `SameSite=Strict` cookies and never appear in a body, by the user's decision.
 - Mobile: `auth/mobile/*` returns tokens in the body for `expo-secure-store`, sent as Bearer. The user chose this because a phone must hold the session somewhere, the React Native docs call cookie auth unstable, and `HttpOnly` guards against XSS, which native apps don't have.
 - CSRF: `TrustedOrigin` replaces Django's CSRF tokens, so clients hold nothing. It's a default permission, so any view setting `permission_classes` must include it or `NoBrowser`.

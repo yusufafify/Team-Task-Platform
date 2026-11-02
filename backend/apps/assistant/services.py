@@ -23,7 +23,7 @@ User = get_user_model()
 
 # Each request is scarce, so one question gets at most two tool rounds and a final answer.
 MAX_REQUESTS = 3
-# For the whole question, because three full timeouts would pass gunicorn's 30-second limit.
+# For the whole question, because three full timeouts would pass a proxy's usual 30 seconds.
 DEADLINE_SECONDS = 25.0
 SNAPSHOT_OPEN_TASKS = 50
 SNAPSHOT_DONE_TASKS = 10

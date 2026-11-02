@@ -1,3 +1,7 @@
+from collections.abc import Iterable
+
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import QuerySet
@@ -5,21 +9,34 @@ from django.utils import timezone
 from rest_framework.generics import get_object_or_404
 
 from apps.notifications.models import DeviceToken, Notification
+from apps.notifications.serializers import NotificationSerializer
 from apps.tasks.models import Task
 
 User = get_user_model()
 
 
+def user_group(user_id: int) -> str:
+    return f"user_{user_id}"
+
+
+def push(user_ids: Iterable[int], kind: str, data: dict) -> None:
+    """Send to each person's open sockets. Anyone offline catches up through REST."""
+    send = async_to_sync(get_channel_layer().group_send)
+    for user_id in user_ids:
+        send(user_group(user_id), {"type": "deliver", "kind": kind, "data": data})
+
+
 def notify(
     recipient_id: int, kind: str, title: str, *, body: str = "", task: Task | None = None
 ) -> None:
-    # robust: a failed notification must not turn an already committed change into an error.
-    transaction.on_commit(
-        lambda: Notification.objects.create(
+    def create_and_push() -> None:
+        notification = Notification.objects.create(
             recipient_id=recipient_id, kind=kind, title=title, body=body, task=task
-        ),
-        robust=True,
-    )
+        )
+        push([recipient_id], "notification", NotificationSerializer(notification).data)
+
+    # robust: a failed notification must not turn an already committed change into an error.
+    transaction.on_commit(create_and_push, robust=True)
 
 
 def notifications_for(user: User, *, unread: bool = False) -> QuerySet[Notification]:

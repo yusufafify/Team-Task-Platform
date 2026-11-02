@@ -15,6 +15,7 @@ How pytest is set up, and the rules that keep it away from real data.
 - Use the `db` fixture only where a test needs the database.
 - `tests/conftest.py` gives API tests `api`, `team`, `leader`, `member` and `outsider`. `outsider` leads another team, so a leak shows up even for a privileged role.
 - `transaction.on_commit` callbacks don't run inside a test's transaction. Wrap the call in `django_capture_on_commit_callbacks(execute=True)`.
+- Socket tests run through `async_to_sync`, so `database_sync_to_async` stays on the test's thread and transaction. `tests/test_realtime.py` patches out `close_old_connections`, which would otherwise close that connection. Don't use `transaction=True` there: each reconnect risks the Neon stall below.
 - Test settings use the MD5 hasher, because the real one is slow by design. The suite took 8.5 minutes on Neon for 442 tests (2026-11-02), so run a single file while working.
 - `tests/test_environment.py` copies `config` and `apps` into a temp folder. A new top-level package that settings import must join that list.
 - A new connection to the Neon test branch can stall for minutes (seen 2026-11-02: 23 to 270 seconds, stuck in psycopg's connect, while the other threads took 1 second). Keep threaded tests small, and don't let them depend on short time windows.

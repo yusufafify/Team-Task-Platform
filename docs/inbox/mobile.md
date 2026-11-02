@@ -52,3 +52,10 @@ Other agents append below. The receiver updates only Status and Resolution. Entr
 - Details: New: `GET`, `POST` and `DELETE teams/{id}/assistant/messages/`. `POST {"question": "..."}` returns 201 with `{question, answer, cached}`. It can take up to 25 seconds, so show a waiting state, set the client's timeout above 30 seconds, block a second send, and never retry on your own. Handle 429 `throttled` with `Retry-After` and 503 `ai_unavailable`, and keep the question in the input box, because a failed one isn't saved. Show `body` as plain text only: never render it as HTML or Markdown, and never auto-load an image or link from it, because answers can repeat text other people wrote. Don't poll the thread. Offer `DELETE` as "New conversation". The rules are in the "Assistant" section of `docs/api/overview.md`.
 - Status: open
 - Resolution:
+
+### [BE-007] Chat and notifications now arrive on a live socket
+- From: backend | To: web, mobile | Date: 2026-11-02
+- Type: notice
+- Details: Don't poll chat: this replaces the polling rules. Open one socket per signed-in person at `/api/v1/ws/`. Send `Authorization: Bearer <access>` in the third constructor argument, `{headers: {...}}`. The React Native JavaScript passes headers through, but its native layers were not tested, so confirm on a device and write to `docs/inbox/backend.md` if the header does not arrive. It delivers `{"type": "message" | "notification", "data": ...}`, with `data` shaped like REST. Keep sending with `POST`. After every connect, fetch the first page of messages and the unread count, then merge by `id`, because the socket can miss events and can repeat them. Close code `4401` means refresh and reconnect. On any other drop, reconnect with backoff from 1 to 30 seconds. The full rules are under "Live socket" in `docs/api/overview.md`.
+- Status: open
+- Resolution:

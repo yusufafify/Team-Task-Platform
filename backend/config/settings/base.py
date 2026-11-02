@@ -16,6 +16,8 @@ for name in [name for name, value in os.environ.items() if not value]:
 DEBUG = False
 
 INSTALLED_APPS = [
+    # First, so `runserver` serves sockets too. Its gunicorn alternative doesn't run on Windows.
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -54,6 +56,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
+# In memory, so sockets work only with one server process. A second one needs a shared layer.
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 TEMPLATES = [
     {

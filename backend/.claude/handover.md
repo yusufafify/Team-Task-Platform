@@ -24,6 +24,7 @@ Hard cap about 80 lines.
 - `send()` and `generate()` gained `tool_choice` and `timeout`. `change_member_role` now deletes a demoted leader's thread.
 - Added `seed_demo` and `SEED_USER_PASSWORD`.
 - Corrected a misreading: "seeded data only" was never a restriction. See `.claude/rules/ai.md`.
+- At the user's request, added a push-only WebSocket at `/api/v1/ws/` for chat and notifications, replacing polling. Channels and Daphne, one process, in-memory layer, no Redis. Published as BE-007. Prod's start command is now Daphne, and `CONN_MAX_AGE` is 0. Decisions are in `.claude/rules/api.md`, limits in `api-limits.md`.
 - With the user's approval: `migrate assistant` and `seed_demo` ran on `main`, and 15 Gemini requests were spent. `main` now has 5 users, the Demo Team of 4, 10 tasks, 3 comments and 3 messages. Both test threads were cleared.
 
 ## Verification
@@ -32,7 +33,9 @@ Hard cap about 80 lines.
 - 20 of 20 deliberate breaks were caught, each removing one safeguard, including role scoping, thread privacy and each cache rule. One break first produced invalid Python and was redone. The django-reviewer pass found one defect, now fixed: `get_task` cut the description it promised in full.
 - Live, on `runserver` with real JWTs and real Gemini, as a leader and a member, 15 requests, all `succeeded`: snapshot answers, the cache spending no request, tools, history replay without thought steps, `tool_choice: "none"` after function steps, `is_error`, 401 with no token, and `DELETE`. Answers were read by hand and match the seeded data. A member got none of a teammate's work, even when told to ignore its instructions.
 - That run found a real bug the check first passed: the prompt made the model refuse the asker's own request. Fixed and retested live. The member and injection questions ran on the old wording, but their limits are enforced in Python.
-- Not tested: text planted in a comment against the live model, gunicorn, and `check --deploy`.
+- Socket: the full suite ran 462 passed after the last code change, and ruff, migrations and the schema check are clean. 12 of 12 deliberate breaks were caught.
+- Socket, on real Daphne with real `websockets` clients and a throwaway SQLite file, so `main` wasn't touched: a real cookie login connected, and a message arrived in 297 ms with the same shape as REST. A stranger heard nothing, a removed member stopped hearing on an open socket, and a login cookie from another origin was refused.
+- Not tested: text planted in a comment against the live model, `check --deploy`, a real browser or phone on the socket, Daphne on Linux, and sockets on Neon rather than SQLite, apart from the test suite.
 
 - Live on Gemini with the user's key, through `provider.send`: plain reply, tool request, and a tool round trip replaying `reply.steps` with their thought step. All worked on `gemini-3.5-flash-lite`. These checks used 11 requests.
 - The default model changed from `gemini-3.8-flash` after its first real request hit the 25-second limit. Measurements are in `.claude/rules/ai.md`.
@@ -52,7 +55,8 @@ Nothing.
 1. User commits this session's changes.
 2. Phase 5: RAG. The user wants it to work from the signed-in user's actual data, like the chatbot. The tool loop and scoping are ready to reuse. Set `SEED_USER_PASSWORD` in `.env` and rerun `seed_demo` before anyone logs in as a demo account.
 3. When the user clears the billing lock, run the Backend workflow, because Phases 1 to 3 have never run in CI.
-4. For Phase 8 (deployment): hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api-limits.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`.
+4. Mobile must confirm on a device that `Authorization` reaches the socket. The React Native JavaScript passes headers through, but its native layers weren't checked. `gunicorn` is unused now, so remove it when the host is chosen.
+5. For Phase 8 (deployment): the user must decide how scheduled notifications reach sockets (see `.claude/rules/scheduling.md`). The host must run one always-on Daphne process, and its `/api/*` proxy must forward WebSocket upgrades. Hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api-limits.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`.
 
 ## Blockers / waiting on other agents
 
@@ -69,6 +73,6 @@ None: the inbox was empty on 2026-11-02.
 
 ## History
 
-- 2026-11-02: Phase 3 migrated, checked with a real call and ticked; graphify rule added.
 - 2026-11-02: error codes, request IDs and a route guard test added before Phase 4.
 - 2026-11-02: Phase 4 chatbot built, migrated, seeded, checked live and ticked.
+- 2026-11-02: live socket for chat and notifications added.
