@@ -21,7 +21,7 @@ Hard cap about 80 lines.
 
 ## Verification
 
-- Full suite: 574 passed. After that, 3 query-count tests, one prompt clause and a code comment were added. The report test files were rerun after the first two (47 passed), not the whole suite. Ruff, `makemigrations --check` and `spectacular --validate --fail-on-warn` are clean, and the generated schema matches `docs/api/openapi.yaml` exactly.
+- Full suite on the final code, commit `55a8836`: 577 passed. Ruff, `makemigrations --check` and `spectacular --validate --fail-on-warn` are clean, and the generated schema matches `docs/api/openapi.yaml` exactly.
 - 40 of 40 deliberate breaks caught, each removing one safeguard. Files restored and checked afterwards.
 - The django-reviewer pass found no defects.
 - On real `runserver` with real JWTs on `main`: 401 with no token, 403 for a member, 404 for a stranger, 405 on `POST`, 200 for the leader with the right shape. A rerun of the command spent no request.
@@ -41,11 +41,10 @@ Nothing.
 
 ## Next steps
 
-1. User commits this session's changes.
-2. Phase 7: seed data and final coverage. Set `SEED_USER_PASSWORD` in `.env` and rerun `seed_demo` before anyone logs in as a demo account. The seed must backdate tasks, comments and messages into the last complete month, or `generate_reports` finds a quiet month on many dates: comments and messages take the day the seed ran.
-3. When the user clears the billing lock, run the Backend workflow, because Phases 1 to 3 have never run in CI.
-4. Mobile must confirm on a device that `Authorization` reaches the socket. The React Native JavaScript passes headers through, but its native layers weren't checked. `gunicorn` is unused now, so remove it when the host is chosen.
-5. For Phase 8 (deployment): start the scheduler inside the Daphne process, as `.claude/rules/scheduling.md` decides, and add `generate_reports` to it, with a notification to leaders. The host must run one always-on Daphne process, and its `/api/*` proxy must forward WebSocket upgrades, or web runs on the polling fallback until a ticket endpoint exists. Hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api-limits.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`. Run `embed_pending` once after the first deploy.
+1. Phase 7: seed data and final coverage. Set `SEED_USER_PASSWORD` in `.env` and rerun `seed_demo` before anyone logs in as a demo account. The seed must backdate tasks, comments and messages into the last complete month, or `generate_reports` finds a quiet month on many dates: comments and messages take the day the seed ran.
+2. When the user clears the billing lock, run the Backend workflow, because Phases 1 to 3 have never run in CI.
+3. Mobile must confirm on a device that `Authorization` reaches the socket. The React Native JavaScript passes headers through, but its native layers weren't checked. `gunicorn` is unused now, so remove it when the host is chosen.
+4. For Phase 8 (deployment): start the scheduler inside the Daphne process, as `.claude/rules/scheduling.md` decides, and add `generate_reports` to it, with a notification to leaders. The host must run one always-on Daphne process, and its `/api/*` proxy must forward WebSocket upgrades, or web runs on the polling fallback until a ticket endpoint exists. Hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api-limits.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`. Run `embed_pending` once after the first deploy.
 
 ## Blockers / waiting on other agents
 
