@@ -75,7 +75,21 @@ There are no cookies here. The app keeps both tokens, in the device's encrypted 
 
 - New messages and notifications arrive on the live socket below. Poll only as the fallback described there, because every request reads the database, whose free compute hours are limited.
 - `GET notifications/?unread=true` gives the badge count in `count`. Fetch it on app open, on focus and on screen changes, with no timer of its own.
-- A notification is created when a task is assigned, and when someone comments on a task you created or are assigned to. Its `title` is a fixed phrase, its `body` is the task's title. Due-soon, overdue, email and push arrive with Phase 8.
+- `kind` says what happened, and its `title` is a fixed phrase:
+
+| `kind` | Sent when | `body` | Email |
+|---|---|---|---|
+| `task_assigned` | A task is assigned to you | The task's title | Yes |
+| `task_commented` | Someone comments on a task you created or are assigned to | The task's title | No |
+| `task_due_soon` | Your open task is due within 24 hours | The task's title | Yes |
+| `task_overdue` | Your open task has passed its due date | The task's title | Yes |
+| `report_ready` | A monthly report is written, for the team's leaders | `<team name>: <month>` | Yes |
+
+- Reminders come from a job that runs about once an hour, so a `task_due_soon` can arrive up to an hour after the 24-hour mark. You get one of each per due date, so moving a due date can bring another.
+- A `report_ready` has `task: null` and no team id, so open the reports screen, and read the team's name from `body`.
+- Every kind also goes to the recipient's phones as a push, sent by the server. Socket events and pushes are separate, so a phone in the foreground can get both.
+- A push carries the notification's `title` and `body`, plus `data`: `{"notification": 9, "kind": "task_assigned", "task": 4}`. `task` can be null. Use `data` to open the right screen when someone taps it.
+- A failed push or email is retried about hourly for a day, then dropped. The notification itself stays in `GET notifications/`, so show that list as the record, and treat email and push as a nudge.
 
 ### Live socket
 
@@ -102,7 +116,7 @@ Each event is JSON with a `type` and `data`, and `data` has the same shape as th
 - On mobile, close the socket when the app goes to the background and reconnect on return. On web, reconnect when a hidden tab comes back if the socket has dropped.
 - Show when the socket is down, because new messages will be slow to appear until it's back.
 - Someone removed from a team stops getting its events at once. Their socket stays open for their other teams.
-- `POST device-tokens/` stores an Expo token. A token already on another account moves to the requester.
+- `POST device-tokens/` stores an Expo token. A token already on another account moves to the requester. The server deletes a token Expo says is dead, so register again after every login, and whenever the app gets a new one.
 
 ## Assistant
 
@@ -138,8 +152,8 @@ A monthly report sums up one team's month: numbers worked out by the server, and
 - Default pages, newest month first. `month` is the first day of the month, in the team's timezone.
 - `stats` and `members` hold the same numbers as `GET teams/{id}/stats/` for that month, but frozen when the report was written. So they can differ from live stats later, and that's correct. `overdue` is the count on the day of writing. A member row has `name` in place of `user`, and someone who had left the team by then has no row.
 - Show `body` as plain text with its line breaks. Never render it as HTML or Markdown, and never load an image or open a link from it automatically, because it can repeat text other people wrote. It normally has the headings Summary, Achievements, Risks and Next month, but the AI writes them, so don't parse it.
-- Clients can't create, change or delete a report. The server writes one after each month ends, for now when an operator runs it and from Phase 8 on a schedule. A month with no activity gets none, so show an empty state.
-- A new report sends no notification yet. Fetch the list when the screen opens, and never poll it.
+- Clients can't create, change or delete a report. The server writes one within a day of each month ending, on a schedule. A month with no activity gets none, so show an empty state.
+- A new report sends leaders a `report_ready` notification. Fetch the list when the screen opens or when that arrives, and never poll it.
 
 ## Health
 

@@ -1,15 +1,15 @@
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import Avg, Count, F, Q, QuerySet
+from django.db.models import Avg, Count, Exists, F, OuterRef, Q, QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from apps.notifications.models import Notification
-from apps.notifications.services import notify
+from apps.notifications.services import notify, remind
 from apps.tasks.models import Comment, Task
 from apps.teams.models import TeamMembership
 from apps.teams.services import LEADER, get_membership, require_leader
@@ -17,6 +17,7 @@ from apps.teams.services import LEADER, get_membership, require_leader
 User = get_user_model()
 MEMBER_EDITABLE_FIELDS = {"status"}
 EMPTY_METRICS = {"due": 0, "completed": 0, "delayed": 0, "overdue": 0, "delay": None}
+DUE_SOON_WINDOW = timedelta(hours=24)
 
 
 def overdue_filter() -> Q:
@@ -137,6 +138,30 @@ def add_comment(actor: User, task_id: int, *, body: str) -> Comment:
                 task=task,
             )
     return comment
+
+
+def _reminders_owed(kind: str) -> QuerySet[Task]:
+    sent = Notification.objects.filter(
+        task=OuterRef("pk"), recipient=OuterRef("assignee"), kind=kind, due_at=OuterRef("due_at")
+    )
+    # Removing a member unassigns their open tasks, so every assignee here is on the team.
+    return (
+        Task.objects.exclude(status=Task.Status.DONE)
+        .filter(assignee__is_active=True)
+        .filter(~Exists(sent))
+    )
+
+
+def send_reminders() -> None:
+    """Remind assignees once per due date. It selects what's owed, so a missed run catches up."""
+    now = timezone.now()
+    due_soon = _reminders_owed(Notification.Kind.TASK_DUE_SOON).filter(
+        due_at__range=(now, now + DUE_SOON_WINDOW)
+    )
+    for task in due_soon:
+        remind(task, Notification.Kind.TASK_DUE_SOON, "A task is due soon")
+    for task in _reminders_owed(Notification.Kind.TASK_OVERDUE).filter(overdue_filter()):
+        remind(task, Notification.Kind.TASK_OVERDUE, "A task is overdue")
 
 
 def _metrics(lower: datetime, upper: datetime) -> dict:

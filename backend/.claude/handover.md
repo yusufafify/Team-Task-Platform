@@ -5,51 +5,43 @@ Hard cap about 80 lines.
 ## Current state
 
 - Date: 2026-11-02
-- Roadmap phase: Phases 1 to 7 are ticked, with CI deferred. Phase 8 (deployment and event pipeline) is next.
+- Roadmap phase: Phases 1 to 7 are ticked, with CI deferred. Phase 8 is half done: the event pipeline is built, the deploy isn't.
 - Repository: `yusufafify/Team-Task-Platform`, working branch `backend`. Only the user commits.
 
 ## Done this session
 
-- Built Phase 7 from the roadmap line, with no detailed prompt.
-- `seed_demo` now fills the last complete month as well as the days around today: 6 more tasks, 4 more comments and 4 more messages. Task, comment and message dates are backdated, so `generate_reports` finds a real month on any date. Design is in `.claude/rules/assistant.md`.
-- "Audit last quarter's expenses" moved into the month rows, because its old 35-day offset only landed there on some dates. It also had a completion date before its creation date, which the backdating fixes.
-- New tests: one walks every team and task route with every method as another team's leader, including `PUT`, which no test tried. Others check that `openapi.yaml` matches the code, a forged host gets the JSON 400, and a refused socket disconnects cleanly.
-- No endpoint, payload or error format changed, so there's no changelog entry or inbox notice.
-- Coverage is measured with `uv run --with pytest-cov`, so nothing was added to the lockfile. The command is in `.claude/rules/testing.md`.
-- My decisions, not asked: no second team, no seeded notifications, no `pytest-cov` dependency or coverage gate in CI.
-- With the user's approval, on `main`: reran `seed_demo`, deleted the Demo Team's October report, and ran `generate_reports`. That spent 1 Gemini request, as approved. The old report's text is in the session scratchpad only.
+- Built Phase 8's code from the roadmap line, with no detailed prompt. Design is in `.claude/rules/scheduling.md`.
+- `send_reminders`, `deliver_pending`, `run_scheduler`, `config/scheduler.py`, Expo push and Resend email over `httpx`, `report_ready` notifications, migration `notifications/0002`, `Dockerfile` and `.dockerignore`. `gunicorn` is removed.
+- Changed the plan: the scheduler runs on Daphne's loop, not in a daemon thread, because measured latency and thread safety both ruled the thread out.
+- Published as BE-010, with a changelog entry and `openapi.yaml`. The README now has rollback and smoke steps, which closes that audit item.
+- My decisions, not asked: comments push but don't email; reminders go to the assignee only; a failed send retries hourly for a day; `RESEND_API_KEY` is required in prod; generate_reports runs daily; no SDKs.
 
 ## Verification
 
-- Full suite on the final code: 592 passed. Ruff, `ruff format --check` and `makemigrations --check` are clean. The schema test confirms `docs/api/openapi.yaml` matches.
-- Coverage went from 98% to 99%. What's left is `__str__` methods, `wsgi.py`, which nothing runs, and `prod.py` and the guards in `test.py`, which `tests/test_environment.py` covers in a subprocess coverage can't see.
-- 12 of 12 deliberate breaks caught, each removing one safeguard. Files restored and checked afterwards.
-- Seed dates are tested on 5 awkward dates, including just after February and across a year.
-- October's new report was read by hand against `main`: every number, per-person rate and claim was right, and nothing was invented.
-- That report used none of its 6 comments and 5 messages, so the prompt now asks for causes and who gave them. With the user's approval, October's report was deleted and rewritten on `main` for 1 more Gemini request. All three causes appeared with the right author: see "Checked live" in `.claude/rules/reports.md`. Only the report tests were rerun after this change: 47 passed.
-- 13 of the 29 tasks, comments and messages on `main` have no `Embedding` row yet. They embed on the next search, in one request.
-
-## Phase 6 results, still true
-
-- Python works out every report number and the model writes only `body`. Design is in `.claude/rules/reports.md`.
-- 577 tests and 40 deliberate breaks at commit `55a8836`, plus a real `runserver` check with real JWTs on `main`.
+- Full suite on the final code: 659 passed in 18 minutes. Ruff, `ruff format --check`, `makemigrations --check` and `spectacular --validate --fail-on-warn` are clean.
+- 27 of 27 deliberate breaks caught, each removing one safeguard. Files restored and checked afterwards.
+- Real Daphne, real socket, `test_neondb`: a scheduled reminder reached the socket in 170 to 183 ms. The plain-thread plan took 459 to 1195 ms.
+- Image steps rehearsed by hand in a clean copy with no `.env`: `collectstatic`, `check --deploy` (clean, and the first time it ran), and prod Daphne. HTTPS redirect, forged host and `/healthz` were right. With the database refused, 4 jobs failed and the server stayed up.
+- Real Expo called once with a dummy token: HTTP 200 and a `DeviceNotRegistered` ticket, as handled, in 0.68 seconds.
+- Never tested: the Docker image itself, Resend for real, a real phone or browser, Daphne on Linux, and a real proxy's `DJANGO_NUM_PROXIES`.
 
 ## Earlier work, still true
 
-- Phases 3, 4 and 5 and the socket were checked live. Details are in `.claude/rules/ai.md`, `assistant.md`, `retrieval.md` and `api.md`.
-- Never tested: `check --deploy`, a real browser or phone on the socket, Daphne on Linux, and sockets on Neon rather than SQLite, apart from the test suite.
-- `main` has 5 users, the Demo Team of 4, 15 tasks, 7 comments and 7 messages, 16 `Embedding` rows and 1 `MonthlyReport`.
+- Phases 3 to 6 and the socket were checked live. Details are in `.claude/rules/ai.md`, `assistant.md`, `retrieval.md`, `reports.md` and `api.md`.
+- `main` has 5 users, the Demo Team of 4, 15 tasks, 7 comments and 7 messages, 16 `Embedding` rows and 1 `MonthlyReport`. 13 of the 29 tasks, comments and messages have no `Embedding` row yet.
 
 ## In progress
 
-Nothing.
+Phase 8's deploy, waiting on the user. They have no card or billing details to give and no Docker on this machine (2026-11-03), so every card-based host is out, and the host builds the image. Recommended: Render's free web service with an outside monitor on `/healthz`. Back4app is the backup. Details are in `.claude/rules/scheduling.md`.
 
 ## Next steps
 
-1. The four demo accounts log in, tested with `authenticate` on `main`. Agents can't edit `.env`, so `seed_demo` got a generated password as a variable for that one run. The user holds it and must add it to `.env` as `SEED_USER_PASSWORD`, or the next `seed_demo` run disables the logins.
-2. When the user clears the billing lock, run the Backend workflow, because Phases 1 to 3 have never run in CI.
-3. Mobile must confirm on a device that `Authorization` reaches the socket. The React Native JavaScript passes headers through, but its native layers weren't checked. `gunicorn` is unused now, so remove it when the host is chosen.
-4. For Phase 8 (deployment): start the scheduler inside the Daphne process, as `.claude/rules/scheduling.md` decides, and add `generate_reports` to it, with a notification to leaders. The host must run one always-on Daphne process, and its `/api/*` proxy must forward WebSocket upgrades, or web runs on the polling fallback until a ticket endpoint exists. Hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api-limits.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`. Run `embed_pending` once after the first deploy.
+1. The user signs up on Render with no card, and commits and pushes this work, because Render builds from the repo.
+2. The user creates a Resend key, which prod needs to start. Set the variables in README's table, deploy, run its "Check it's working" list, then `embed_pending` once, then tick Phase 8.
+3. Keeping the web app same-origin: serving its build from this container avoids needing a proxy that forwards WebSocket upgrades. Vercel's rewrites aren't confirmed to, and Cloudflare Workers reportedly do. Decide this when `web/` exists, and count whatever proxy remains in `DJANGO_NUM_PROXIES`.
+4. Check `SECURE_PROXY_SSL_HEADER` on the real host, and measure a write that sends: sends run inside the request.
+5. When the user clears the billing lock, run the Backend workflow, because Phases 1 to 3 have never run in CI.
+6. Mobile must confirm on a device that `Authorization` reaches the socket, and that a push arrives.
 
 ## Blockers / waiting on other agents
 
@@ -57,8 +49,9 @@ Nothing.
 - Any further `migrate` or data change on `main` needs the user's approval: `main` serves local work and prod.
 - `docs/` reads may need `/add-dir D:\work\Nesma-Airlines\docs` at session start. `.claude/settings.json` lists the folder, but reads were refused until that command ran.
 - Agents can't read or edit `.env`.
-- Audit items still open, none started: rollback and smoke steps, dependency scan in CI, and removing boilerplate docstrings.
-- `.claude/rules/architecture.md` is 57 lines, over the 50-line cap. `brain.md` is at its cap of 30, so splitting it means freeing a line there first.
+- Audit items still open, none started: dependency scan in CI, and removing boilerplate docstrings.
+- Hosts, from the vendors' pages on 2026-11-02. Northflank's free Sandbox says "Always on, no sleeping" with `code.run` TLS, but its docs require a payment method and say it shouldn't be used for production, and its pricing page shows a security incident banner asking users to rotate credentials. WebSockets aren't stated. Google's e2-micro is always free in 3 US regions with 1 GB RAM and 1 GB egress a month, and needs a billing account, and you run the VM and HTTPS yourself. Oracle's Always Free VMs may be reclaimed when idle for 7 days, which a quiet app is. Render's free tier sleeps, and Koyeb's scales to zero.
+- Without a verified domain, email reaches only the Resend account's owner. The project has no domain budget.
 
 ## Inbox processed up to
 
@@ -66,6 +59,6 @@ None: the inbox was empty on 2026-11-02.
 
 ## History
 
-- 2026-11-02: Phase 5 RAG built, migrated, embedded, checked live and ticked.
 - 2026-11-02: Phase 6 monthly reports built, migrated, first report written, checked live and ticked.
 - 2026-11-02: Phase 7 seed and final coverage built, applied to `main`, report rewritten, checked by hand and ticked.
+- 2026-11-03: Phase 8 event pipeline and scheduler built, checked on a real server against the test branch, and `notifications/0002` applied to `main` with the user's approval. Not deployed.

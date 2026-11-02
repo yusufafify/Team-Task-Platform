@@ -10,7 +10,7 @@ Index only: this is the one map of backend memory. Regions in `.claude/rules/` l
 | `.claude/rules/api.md` | API patterns, error format, Phase 2 decisions | Views, serializers, urls, throttles | Designing an endpoint or changing auth |
 | `.claude/rules/api-limits.md` | Login limits, accepted risks, what isn't built | Views, urls, throttles | Changing auth, or planning Phase 8 hosting |
 | `.claude/rules/domain-model.md` | Schema choices and deletion tiers | Models, admin, services | Designing a model or a delete path |
-| `.claude/rules/scheduling.md` | How scheduled jobs run, and host and Neon limits | Management commands, `tasks.py` | Planning Phase 8, or choosing a host |
+| `.claude/rules/scheduling.md` | Scheduled jobs, reminders, email and push, host and Neon limits | Management commands, `tasks.py`, notification services, `config/scheduler.py`, `config/asgi.py` | Changing delivery, or choosing a host |
 | `.claude/rules/database.md` | Neon branches, connections, migrations | Models, migrations, settings, `manage.py`, `.env.example` | Running `migrate` or any database command |
 | `.claude/rules/testing.md` | pytest setup, test database rules | `tests/`, `test.py`, `pyproject.toml` | Running pytest, or debugging a failure |
 | `.claude/rules/ai.md` | LLM gateway, limits, call log, SDK traps, data-use terms | `apps/ai/`, `tests/test_ai.py` | Planning Phases 4 to 6, or any Gemini work |

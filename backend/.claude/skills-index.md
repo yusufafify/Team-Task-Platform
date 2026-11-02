@@ -25,7 +25,7 @@ Load a skill only when its row applies. Most skill examples are TypeScript, so t
 | incremental-implementation | Thin, verified slices | Multi-file work in every phase | UI slices, feature flags, the missing `definition-of-done.md` |
 | performance-optimization | Measure-first tuning: N+1, query plans, cache design | A measured slowdown, or checking list endpoints for N+1 | Frontend and Core Web Vitals content. The Redis row |
 | planning-and-task-breakdown | Task lists with acceptance criteria | Splitting a phase prompt into steps | `tasks/plan.md` and `tasks/todo.md`: use `handover.md`. UI slices |
-| resend | Resend API usage and gotchas | Phase 8, when `uv add resend` arrives. Use its Python examples | Node.js examples, inbound, broadcasts, automations, inboxes, `agent-email-inbox` |
+| resend | Resend API usage and gotchas | Changing email. We call the API over `httpx` with no SDK, so use its parameters and gotchas | Node.js examples, inbound, broadcasts, automations, inboxes, `agent-email-inbox` |
 | security-and-hardening | OWASP prevention, privacy, LLM security | Phases 2, 4 and 8 | Express, helmet, zod and bcrypt examples: use Django and DRF equivalents |
 | security-scan | Vulnerability scan checklist | Before release, and after auth or AI work | `--fix`, `/secrets-scan`, `/config-scan` (not installed) |
 | software-ai-integration | LLM patterns: tools, structured output, guardrails, cost | Phases 3, 4 and 6 | Vercel AI SDK, Zod, React hooks, CopilotKit, LangGraph, CrewAI, gateways |

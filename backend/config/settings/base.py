@@ -148,6 +148,11 @@ AI_EMBEDDING_REQUESTS_PER_DAY = env.int("AI_EMBEDDING_REQUESTS_PER_DAY", default
 
 SEED_USER_PASSWORD = env("SEED_USER_PASSWORD", default=None)
 
+RESEND_API_KEY = env("RESEND_API_KEY", default=None)
+EMAIL_FROM = env("EMAIL_FROM", default="Team Tasks <onboarding@resend.dev>")
+# Prod only: dev shares its database with prod, so running it there too would double every job.
+SCHEDULER_IN_SERVER = False
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "Team Task Platform API",
     "VERSION": "0.1.0",

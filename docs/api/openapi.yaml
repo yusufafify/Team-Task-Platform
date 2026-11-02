@@ -959,12 +959,14 @@ components:
       - task_commented
       - task_due_soon
       - task_overdue
+      - report_ready
       type: string
       description: |-
         * `task_assigned` - Task assigned
         * `task_commented` - Task commented
         * `task_due_soon` - Task due soon
         * `task_overdue` - Task overdue
+        * `report_ready` - Report ready
     Member:
       type: object
       properties:

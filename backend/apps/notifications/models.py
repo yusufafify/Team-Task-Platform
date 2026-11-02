@@ -13,6 +13,7 @@ class Notification(models.Model):
         TASK_COMMENTED = "task_commented", "Task commented"
         TASK_DUE_SOON = "task_due_soon", "Task due soon"
         TASK_OVERDUE = "task_overdue", "Task overdue"
+        REPORT_READY = "report_ready", "Report ready"
 
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications"
@@ -27,11 +28,23 @@ class Notification(models.Model):
         blank=True,
         related_name="notifications",
     )
+    # Set only on reminders: the due date this one was about, so a new date earns a new reminder.
+    due_at = models.DateTimeField(null=True, blank=True)
     read_at = models.DateTimeField(null=True, blank=True)
+    # Null means still owed. Set before sending, so overlapping runs can't both send.
+    pushed_at = models.DateTimeField(null=True, blank=True)
+    emailed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         indexes = [models.Index(fields=["recipient", "-created_at"])]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["recipient", "task", "kind", "due_at"],
+                condition=models.Q(due_at__isnull=False),
+                name="unique_reminder",
+            )
+        ]
 
     def __str__(self):
         return f"{self.kind} for {self.recipient}"

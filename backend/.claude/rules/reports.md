@@ -11,7 +11,7 @@ Phase 6 monthly reports, in `apps/reports`. Built from the roadmap line, with no
 
 ## How it works
 
-- `manage.py generate_reports` calls `write_report()` per team: find the last complete month on the team's clock, skip if done or quiet, spend one request, save. Run by hand until Phase 8 adds it to the schedule.
+- `manage.py generate_reports` calls `write_report()` per team: find the last complete month on the team's clock, skip if done or quiet, spend one request, save, then tell every leader with a `report_ready` notification. The schedule runs it daily.
 - Python works out every number. The model gets them as JSON and writes only `body`, so `stats` and `members` can't be wrong even when the prose is.
 - A report reads through a leader's scoped services (`team_stats`, `visible_tasks`, `team_messages`), using the team's first leader as the actor, so there's no unscoped path for a job with no user. A team with no leader is skipped, because nobody could read its report.
 - One request per report, no tools (D-006). Comments and chat go in the same request, newest first, capped at 200 tasks and 100 of each text, each with its true total.
@@ -43,5 +43,6 @@ Phase 6 monthly reports, in `apps/reports`. Built from the roadmap line, with no
 
 - Only the last complete month is due, so an outage longer than a month loses that month's report. Nothing backfills it: see the `shortcut:` comment in `last_complete_month`.
 - Reports share the chat model's daily limit, so a run uses requests people could have used. Any account can create a team, and an active one costs a request a month.
-- No notification when a report appears. Phase 8 should add it with the schedule, because a hand-run command is a separate process and can't reach sockets.
+- A hand-run `generate_reports` is a separate process, so its `report_ready` reaches sockets only on a shared layer. The email, push and stored row still go out.
+- `report_ready` has no team id, so a client can't open that team's report directly. Clients were told to ask if they need one.
 - A planted comment can distort `body`, as in chat, but can reach only leaders, who can read that comment anyway. Nothing in a report can act.

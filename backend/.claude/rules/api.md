@@ -45,4 +45,4 @@ How the Phase 2 API is built, and the choices made without a detailed phase prom
 - Refresh tokens rotate, and used ones are blacklisted. `auth/logout-all/` revokes all of a user's, on both clients. Any future password change should call `revoke_all_tokens`.
 - A failed web refresh leaves cookies alone. Cookies are shared across tabs, so a second tab can lose the race, and clearing them would end the first tab's new session.
 - Stats period: whole days in the team's timezone, defaulting to the month so far. Stats and notifications live in existing apps, so there's no new app.
-- In-app notifications exist for assignment and comments. Phase 8 adds due-soon, overdue, email and push.
+- Notification kinds and who gets them are in `docs/api/overview.md`. Reminders, email and push are in `.claude/rules/scheduling.md`.

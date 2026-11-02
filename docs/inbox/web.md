@@ -73,3 +73,10 @@ Other agents append below. The receiver updates only Status and Resolution. Entr
 - Details: New: `GET teams/{id}/reports/`, read-only, default pages, newest month first. Each result is `{id, month, stats, members, body, created_at}`. Leaders only: a member gets 403 and a stranger 404, so hide the screen from members. `stats` has the same fields as `GET teams/{id}/stats/`, and each `members` row is `{name, stats}`. These numbers are frozen when the report is written, so they can differ from live stats later. Show `body` as plain text with its line breaks: never render it as HTML or Markdown, and never auto-load an image or link from it. A quiet month has no report, so show an empty state. No notification is sent yet, so fetch on opening the screen and don't poll. The rules are in the "Reports" section of `docs/api/overview.md`. No existing endpoint changed.
 - Status: open
 - Resolution:
+
+### [BE-010] Reminders and a new notification kind
+- From: backend | To: web, mobile | Date: 2026-11-02
+- Type: notice
+- Details: Built and tested, but not on a host yet. Notifications now have five kinds: `task_assigned`, `task_commented`, `task_due_soon`, `task_overdue` and the new `report_ready`, so accept any `kind`, including ones you don't know. No field was added. `report_ready` goes to a team's leaders, with `task: null` and `<team name>: <month>` in `body`: there's no team id, so open the reports screen, and tell us through `docs/inbox/backend.md` if you need one. Email and push are sent by the server, so there's nothing to call. The table and rules are under "Chat and notifications" in `docs/api/overview.md`. This replaces BE-009's "no notification is sent yet".
+- Status: open
+- Resolution:

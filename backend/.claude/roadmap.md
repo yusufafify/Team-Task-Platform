@@ -11,7 +11,7 @@ Each future phase will come with its own detailed prompt. Every phase ships its 
 - [x] Phase 7: seed data + final coverage
 - [ ] Phase 8: deployment + event pipeline: email via Resend, Expo push, scheduled jobs + `run_scheduler` process
 
-Phase 6 ships reports as a management command run by hand, because `run_scheduler` doesn't exist until Phase 8, which adds it to the schedule.
+Phase 8's code is built and tested. It stays unticked until it runs on a host, because that's the half nobody has seen work.
 
 Open: no agent owns `packages/api-client`, and no phase generates it.
 

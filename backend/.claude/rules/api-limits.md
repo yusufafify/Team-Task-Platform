@@ -22,4 +22,5 @@ What the API can't do yet, and the limits accepted on purpose.
 - Cookies must reach the socket, so the web host's `/api/*` proxy has to forward WebSocket upgrades. Check this before choosing a host. If it can't, web runs on the polling fallback, and live updates need a short-lived ticket endpoint, which isn't built.
 - Not limited: sockets per person. A socket can miss an event if its queue passes the layer's 100, which is why clients catch up through REST.
 - Registration and `add_member` reveal whether an email has an account. Login doesn't. Accepted for now.
+- Email addresses are never verified, and registration is open. So once a domain is verified in Resend, someone can register with a stranger's address and have task titles they wrote emailed there from our sender, and can use up the 100 a day. Verification is the fix, and isn't built. The default sandbox sender can't do this, because it reaches only the account's owner.
 - Not built: password reset or change, email change, leaving a team, date filters on tasks.

@@ -11,6 +11,8 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
 DATABASES = {"default": env.db("DATABASE_URL") | {"DISABLE_SERVER_SIDE_CURSORS": True}}
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")
 GEMINI_API_KEY = env("GEMINI_API_KEY")
+RESEND_API_KEY = env("RESEND_API_KEY")
+SCHEDULER_IN_SERVER = env.bool("SCHEDULER_IN_SERVER", default=True)
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},

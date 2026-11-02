@@ -68,3 +68,8 @@ Newest entries go at the bottom. Entry format:
 - Change: added
 - Breaking: no
 - Notes: Monthly AI reports, newest month first, for leaders only: a member gets 403 and a stranger 404. Each has `month`, frozen `stats` and `members` numbers from the server, and a plain-text `body` written by the AI. Clients can only read them. No existing endpoint changed.
+
+## 2026-11-02 — `GET /api/v1/notifications/`, `/api/v1/ws/` (WebSocket), Expo push
+- Change: added
+- Breaking: no
+- Notes: `kind` gains `report_ready`, and `task_due_soon` and `task_overdue` now really arrive, so clients must accept any `kind`. Notifications now also go out as Expo pushes with `data: {notification, kind, task}`, and as email for every kind except `task_commented`. No field was added to a notification. The table is in `overview.md`. Not yet running on a host.

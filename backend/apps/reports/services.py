@@ -14,6 +14,8 @@ from apps.ai.services import AIUnavailable, generate
 from apps.assistant import tools
 from apps.chat.models import Message
 from apps.chat.services import team_messages
+from apps.notifications.models import Notification
+from apps.notifications.services import notify
 from apps.reports.models import MonthlyReport
 from apps.tasks.models import Comment
 from apps.tasks.services import overdue_filter, team_stats, visible_tasks
@@ -144,9 +146,18 @@ def write_report(team: Team) -> MonthlyReport | None:
     if not reply.text:
         raise AIUnavailable()
     # Get, not create: an overlapping run may have finished first, and its report stands.
-    report, _ = MonthlyReport.objects.get_or_create(
+    report, created = MonthlyReport.objects.get_or_create(
         team=team,
         month=month,
         defaults={"stats": data["stats"], "members": data["members"], "body": reply.text},
     )
+    if created:
+        leaders = team.memberships.filter(role=LEADER).values_list("user_id", flat=True)
+        for leader_id in leaders:
+            notify(
+                leader_id,
+                Notification.Kind.REPORT_READY,
+                "Your team's monthly report is ready",
+                body=f"{team.name}: {month:%B %Y}",
+            )
     return report

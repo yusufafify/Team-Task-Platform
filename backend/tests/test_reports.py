@@ -11,6 +11,7 @@ from rest_framework.exceptions import Throttled
 from apps.ai import provider
 from apps.ai.models import AICall
 from apps.ai.services import AIUnavailable
+from apps.notifications.models import Notification
 from apps.reports import services
 from apps.reports.models import MonthlyReport
 from apps.tasks.models import Task
@@ -130,6 +131,38 @@ def test_the_user_limit_never_stops_a_report(team, leader, gemini, settings):
     done_task(team, leader)
 
     assert services.write_report(team)
+
+
+def test_a_new_report_tells_every_leader_and_no_member(
+    team, leader, member, gemini, django_capture_on_commit_callbacks
+):
+    second_leader = MembershipFactory(team=team, role=LEADER).user
+    done_task(team, leader)
+
+    with django_capture_on_commit_callbacks(execute=True):
+        services.write_report(team)
+
+    notifications = Notification.objects.filter(kind=Notification.Kind.REPORT_READY)
+    assert {row.recipient for row in notifications} == {leader, second_leader}
+    assert notifications.first().body == f"{team.name}: October 2026"
+
+
+def test_a_report_someone_else_finished_first_tells_nobody_again(
+    team, leader, gemini, monkeypatch, django_capture_on_commit_callbacks
+):
+    done_task(team, leader)
+    real_send = provider.send
+
+    def finish_first(*args, **kwargs):
+        ReportFactory(team=team, month=OCTOBER, body="Written first")
+        return real_send(*args, **kwargs)
+
+    monkeypatch.setattr(provider, "send", finish_first)
+
+    with django_capture_on_commit_callbacks(execute=True):
+        services.write_report(team)
+
+    assert not Notification.objects.exists()
 
 
 def test_a_report_may_take_longer_than_a_question(team, leader, gemini):

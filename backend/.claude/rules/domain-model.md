@@ -17,6 +17,7 @@ Schema choices made in Phase 1 from the roadmap and glossary, because no detaile
 - Removing a member unassigns their unfinished tasks. Finished tasks keep the assignee, so a former member can appear on a task without any membership.
 - Overdue, delayed and the rates stay computed, never stored.
 - `DeviceToken` needs no platform, because Expo's token already identifies the device. Changing Python-only choices, like `Notification.Kind`, creates a migration with no SQL.
+- `Notification.due_at` is set only on reminders, and `pushed_at` and `emailed_at` are sent markers: see `.claude/rules/scheduling.md`.
 - Task lists and stats use only their foreign-key indexes for now. Add composite indexes when a measured query needs them.
 
 ## Deletion tiers
