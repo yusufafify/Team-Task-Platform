@@ -72,6 +72,8 @@ async def assert_refused(headers):
     live = await open_socket(headers)
     close = await live.receive_output()
     assert (close["type"], close["code"]) == ("websocket.close", EXPIRED)
+    # A refused socket joined no group, and must leave without trying to drop one.
+    await live.disconnect()
 
 
 async def next_event(live):

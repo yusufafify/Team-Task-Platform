@@ -8,11 +8,11 @@ Each future phase will come with its own detailed prompt. Every phase ships its 
 - [x] Phase 4: chatbot: snapshot + tools + answer cache
 - [x] Phase 5: RAG (Retrieval-Augmented Generation) with pgvector
 - [x] Phase 6: monthly AI reports
-- [ ] Phase 7: seed data + final coverage
+- [x] Phase 7: seed data + final coverage
 - [ ] Phase 8: deployment + event pipeline: email via Resend, Expo push, scheduled jobs + `run_scheduler` process
 
 Phase 6 ships reports as a management command run by hand, because `run_scheduler` doesn't exist until Phase 8, which adds it to the schedule.
 
 Open: no agent owns `packages/api-client`, and no phase generates it.
 
-Open: Phases 1 to 6 were ticked without a CI run, because a GitHub billing lock stops the workflow.
+Open: Phases 1 to 7 were ticked without a CI run, because a GitHub billing lock stops the workflow.

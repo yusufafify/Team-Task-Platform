@@ -1,4 +1,5 @@
-from datetime import timedelta
+from datetime import datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -7,6 +8,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.chat.models import Message
+from apps.reports.services import last_complete_month
 from apps.tasks.models import Comment, Task
 from apps.teams.models import Team, TeamMembership
 
@@ -21,7 +23,9 @@ PEOPLE = [
     ("omar", "Omar", "Khaled"),
     ("nour", "Nour", "Adel"),
 ]
-# Title, description, assignee, status, priority, days until due, days until completed.
+# Days count from an anchor: today for what's on the board now, and the first day of the last
+# complete month for what its report reads. Under 28 there, so that month's rows fit in February.
+# Title, description, assignee, status, priority, days to due, days to completed.
 TASKS = [
     ("Prepare the Q4 budget review", "Compare spend.", "sara", "in_progress", "high", 2, None),
     ("Fix the login timeout on mobile", "", "omar", "in_progress", "urgent", -1, None),
@@ -32,20 +36,44 @@ TASKS = [
     ("Draft the customer survey", "", None, "todo", "low", 10, None),
     ("Migrate reports to the new template", "", "nour", "done", "medium", -5, -6),
     ("Write the release notes for 2.4", "", "sara", "done", "medium", -4, -2),
-    ("Audit last quarter's expenses", "", "omar", "done", "low", -35, -34),
 ]
-# Task title, author, body.
+LAST_MONTH_TASKS = [
+    ("Audit last quarter's expenses", "", "omar", "done", "low", 18, 17),
+    ("Book the auditors for the year-end review", "", "mona", "done", "medium", 9, 9),
+    ("Clean up the supplier list", "Drop anyone unused.", "nour", "done", "low", 12, 15),
+    ("Run the fire safety drill", "", "sara", "done", "high", 14, 13),
+    ("Replace the shared printer", "Quotes are in.", "nour", "blocked", "medium", 20, None),
+    ("Roll out the new VPN client", "", "omar", "in_progress", "high", 24, None),
+]
+# Task title, author, body, days to written.
 COMMENTS = [
-    ("Renew the SSL certificate", "omar", "Waiting for DNS access from IT."),
-    ("Renew the SSL certificate", "mona", "I'll chase them tomorrow."),
-    ("Fix the login timeout on mobile", "sara", "It only happens on Android."),
+    ("Renew the SSL certificate", "omar", "Waiting for DNS access from IT.", -3),
+    ("Renew the SSL certificate", "mona", "I'll chase them tomorrow.", -2.9),
+    ("Fix the login timeout on mobile", "sara", "It only happens on Android.", -1),
 ]
-# Author, body.
+LAST_MONTH_COMMENTS = [
+    ("Clean up the supplier list", "nour", "Three suppliers had no contact on file.", 14),
+    ("Replace the shared printer", "nour", "The vendor needs a purchase order first.", 16),
+    ("Replace the shared printer", "mona", "Finance has the order, I'll chase them.", 17),
+    ("Roll out the new VPN client", "omar", "Older laptops need an OS update first.", 22),
+]
+# Author, body, days to written.
 MESSAGES = [
-    ("mona", "Morning all, standup moves to 10:30 tomorrow."),
-    ("omar", "I'm blocked on the SSL renewal until IT answers."),
-    ("sara", "The release notes are out."),
+    ("sara", "The release notes are out.", -2),
+    ("mona", "Morning all, standup moves to 10:30 tomorrow.", -1),
+    ("omar", "I'm blocked on the SSL renewal until IT answers.", -0.8),
 ]
+LAST_MONTH_MESSAGES = [
+    ("mona", "Please send your month-end figures by the 25th.", 4),
+    ("sara", "The fire drill is booked for the 14th.", 10),
+    ("omar", "The VPN rollout starts this week, expect a short outage.", 18),
+    ("nour", "The printer is still stuck on the purchase order.", 21),
+]
+
+
+def backdate(row, moment):
+    # By update, because auto_now_add overwrites anything set on the instance.
+    type(row).objects.filter(pk=row.pk).update(created_at=moment)
 
 
 class Command(BaseCommand):
@@ -72,24 +100,40 @@ class Command(BaseCommand):
             TeamMembership.objects.update_or_create(team=team, user=user, defaults={"role": role})
 
         now = timezone.now()
+        zone = ZoneInfo(team.timezone)
+        month_start = datetime.combine(last_complete_month(team), time(9), tzinfo=zone)
         tasks = {}
-        for title, description, assignee, status, priority, due_in, completed_in in TASKS:
-            tasks[title], _ = Task.objects.update_or_create(
-                team=team,
-                title=title,
-                defaults={
-                    "description": description,
-                    "assignee": users.get(assignee),
-                    "created_by": leader,
-                    "status": status,
-                    "priority": priority,
-                    "due_at": now + timedelta(days=due_in),
-                    # Written directly, so it must stay set exactly when the status is done.
-                    "completed_at": now + timedelta(days=completed_in) if completed_in else None,
-                },
-            )
-        for title, author, body in COMMENTS:
-            Comment.objects.get_or_create(task=tasks[title], author=users[author], body=body)
-        for author, body in MESSAGES:
-            Message.objects.get_or_create(team=team, author=users[author], body=body)
+        for anchor, task_rows, comment_rows, message_rows in (
+            (month_start, LAST_MONTH_TASKS, LAST_MONTH_COMMENTS, LAST_MONTH_MESSAGES),
+            (now, TASKS, COMMENTS, MESSAGES),
+        ):
+            for title, description, assignee, status, priority, due_in, completed_in in task_rows:
+                due = anchor + timedelta(days=due_in)
+                # Written directly, so it must stay set exactly when the status is done.
+                completed = None if completed_in is None else anchor + timedelta(days=completed_in)
+                tasks[title], _ = Task.objects.update_or_create(
+                    team=team,
+                    title=title,
+                    defaults={
+                        "description": description,
+                        "assignee": users.get(assignee),
+                        "created_by": leader,
+                        "status": status,
+                        "priority": priority,
+                        "due_at": due,
+                        "completed_at": completed,
+                    },
+                )
+                created = min(due, completed or due, now) - timedelta(days=7)
+                backdate(tasks[title], created)
+            for title, author, body, written_in in comment_rows:
+                comment, _ = Comment.objects.get_or_create(
+                    task=tasks[title], author=users[author], body=body
+                )
+                backdate(comment, anchor + timedelta(days=written_in))
+            for author, body, written_in in message_rows:
+                message, _ = Message.objects.get_or_create(
+                    team=team, author=users[author], body=body
+                )
+                backdate(message, anchor + timedelta(days=written_in))
         self.stdout.write(f"{team.name}: {len(users)} people and {len(tasks)} tasks.")

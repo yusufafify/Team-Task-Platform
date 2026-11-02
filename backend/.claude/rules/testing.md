@@ -20,3 +20,6 @@ How pytest is set up, and the rules that keep it away from real data.
 - `tests/test_environment.py` copies `config` and `apps` into a temp folder. A new top-level package that settings import must join that list.
 - A new connection to the Neon test branch can stall for minutes (seen 2026-11-02: 23 to 270 seconds, stuck in psycopg's connect, while the other threads took 1 second). Keep threaded tests small, and don't let them depend on short time windows.
 - CI is `.github/workflows/backend.yml`: ruff and pytest on `pgvector/pgvector:pg18`, matching Neon's major version. Action versions are pinned by commit.
+- Two pytest runs at once share `test_neondb`, so run one at a time.
+- Coverage isn't a dependency: `uv run --with pytest-cov pytest --cov=apps --cov=config --cov-branch --cov-report=term-missing:skip-covered`. `prod.py` reads 0% and `test.py` misses its guards only because `tests/test_environment.py` runs them in a subprocess, which coverage can't see. Left uncovered on purpose: `__str__` methods, and `wsgi.py`, which nothing runs.
+- `tests/test_api_platform.py` walks the URL table, so a new route is checked with no new test: it must refuse a stranger, and anything under a team or task must hide from another team's leader. It also fails when `docs/api/openapi.yaml` is behind the code.

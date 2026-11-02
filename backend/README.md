@@ -36,7 +36,7 @@ uv run python manage.py runserver
 
 `migrate` changes the Neon `main` branch, which also serves prod. After the first run, also run `uv run python manage.py createcachetable`.
 
-`uv run python manage.py seed_demo` creates or refreshes a demo team of four people with tasks, comments and chat, so the app has data before any client can add it. It writes to the same branch. Set `SEED_USER_PASSWORD` first, or the accounts can't log in. The leader is `mona@demo.example`, and the members are `sara@`, `omar@` and `nour@` on the same domain.
+`uv run python manage.py seed_demo` creates or refreshes a demo team of four people with tasks, comments and chat, so the app has data before any client can add it. It writes to the same branch. Set `SEED_USER_PASSWORD` first, or the accounts can't log in. The leader is `mona@demo.example`, and the members are `sara@`, `omar@` and `nour@` on the same domain. It fills the days around today and the last complete month, so `generate_reports` has a real month to write up on any date. A reseed moves those dates, but a report already written stays as it was.
 
 `uv run python manage.py embed_pending` makes existing tasks, comments and chat searchable for the assistant. Searches do this themselves, 50 items at a time, so run it after the first migration and after changing `AI_EMBEDDING_MODEL`. It sends that text to Gemini and spends embedding requests, and it's safe to rerun.
 

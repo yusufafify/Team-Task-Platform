@@ -6,6 +6,7 @@ from urllib.parse import quote
 import pytest
 from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.management import call_command
 from django.db import OperationalError
 from django.urls import URLResolver, get_resolver
 from rest_framework.exceptions import Throttled
@@ -15,6 +16,7 @@ from apps.ai.services import AIUnavailable
 from apps.teams.views import TeamViewSet
 from config.exceptions import api_exception_handler
 from config.request_id import RequestIdFilter
+from tests.factories import TaskFactory, UserFactory
 
 # A new public route must join this list on purpose. Every other route has to refuse a stranger.
 PUBLIC_ROUTES = {
@@ -43,6 +45,8 @@ def project_routes(patterns, prefix="/"):
 
 
 ROUTES = set(project_routes(get_resolver().url_patterns))
+# Anything under one team or task. A new route lands here by itself.
+TEAM_ROUTES = sorted(route for route in ROUTES if re.search(r"/(teams|tasks)/1/", route))
 
 
 class DownConnection:
@@ -138,6 +142,55 @@ def test_a_stranger_to_a_team_gets_a_not_found_code(api, team, outsider):
 
     assert response.status_code == 404
     assert response.json()["code"] == "not_found"
+
+
+def test_every_team_route_hides_the_team_from_another_teams_leader(
+    api, team, leader, member, outsider
+):
+    task = TaskFactory(team=team, assignee=member)
+    # Valid for every route, so a refusal can't be mistaken for a failed validation.
+    body = {
+        "body": "Hi",
+        "email": UserFactory().email,
+        "name": "Mine",
+        "question": "Hi",
+        "role": "leader",
+        "status": "done",
+        "title": "Mine",
+    }
+
+    for route in TEAM_ROUTES:
+        path = (
+            route.replace("/teams/1/", f"/teams/{team.pk}/")
+            .replace("/tasks/1/", f"/tasks/{task.pk}/")
+            .replace("/members/1/", f"/members/{member.pk}/")
+        )
+        assert api(leader).get(path).status_code != 404, path
+        for method in ("get", "post", "put", "patch", "delete"):
+            status = getattr(api(outsider), method)(path, body).status_code
+            assert status in (404, 405), (method, path, status)
+
+
+def test_the_team_route_list_reaches_every_kind_of_route():
+    assert "/api/v1/teams/1/members/1/" in TEAM_ROUTES
+    assert "/api/v1/teams/1/reports/" in TEAM_ROUTES
+    assert "/api/v1/tasks/1/comments/" in TEAM_ROUTES
+
+
+def test_a_forged_host_answers_in_json(client):
+    response = client.get("/healthz", headers={"Host": "evil.example"})
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Bad request.", "code": "bad_request"}
+
+
+def test_the_published_schema_matches_the_code(tmp_path):
+    generated = tmp_path / "openapi.yaml"
+
+    call_command("spectacular", "--file", str(generated), "--validate", "--fail-on-warn")
+
+    published = settings.BASE_DIR.parent / "docs" / "api" / "openapi.yaml"
+    assert generated.read_text(encoding="utf-8") == published.read_text(encoding="utf-8")
 
 
 def test_a_role_refusal_gets_a_code(api, team, member):

@@ -37,7 +37,8 @@ The chatbot, in `apps/assistant`, on top of the `apps/ai` gateway. Built from th
 - One thread per person per team, with no conversation objects. "New conversation" is `DELETE`.
 - No admin page: threads are private, like the call log's missing prompts.
 - Names go to the model, emails never do. A person with no name reads as `User <id>`.
-- `seed_demo` lives in `apps/teams`. It finds its team through the demo leader, so a real team sharing the name is safe. Phase 7 extends it. Seeded and real logins run the same flow: see `.claude/rules/ai.md`.
+- `seed_demo` lives in `apps/teams`. It finds its team through the demo leader, so a real team sharing the name is safe. Seeded and real logins run the same flow: see `.claude/rules/ai.md`.
+- Seed rows count days from today or from the first of the last complete month, so that month is never quiet. `created_at` goes in by `update`, because `auto_now_add` overwrites it on save. Keep month rows under 28 days, for February. A rerun with no `SEED_USER_PASSWORD` prints success but makes the demo logins unusable, even working ones.
 
 ## Open
 

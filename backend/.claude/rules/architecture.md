@@ -15,7 +15,7 @@ What's built, where it lives, and how it's configured.
 - Phase 1: five apps with models, initial migrations and admin. Apps have no `apps.py`, because Django's default config is enough.
 - Phase 2: `services.py`, `serializers.py`, `views.py` and `urls.py` in all five apps, under `/api/v1/`, with no schema change. Stats sit in `apps/tasks`.
 - Phases 3 to 6: `apps/ai` holds the provider, limits and call log, with no endpoints. `apps/assistant` holds the chatbot and `apps/reports` the monthly reports, and both call `generate()`.
-- Dependency direction: `tasks` services import `notifications` and `teams` services. `teams` and `notifications` services import only `tasks.models`, which avoids a cycle. `assistant` imports the others' services. Only `reports` imports it, for row helpers, and nothing imports `reports`.
+- Dependency direction: `tasks` services import `notifications` and `teams` services. `teams` and `notifications` services import only `tasks.models`, which avoids a cycle. `assistant` imports the others' services. Only `reports` imports it, for row helpers, and only `seed_demo` imports `reports`, for `last_complete_month`.
 - Settings split: `base.py` holds shared values. `dev.py` and `prod.py` set `SECRET_KEY`, `ALLOWED_HOSTS`, `DATABASES` and `CORS_ALLOWED_ORIGINS`.
 - `DJANGO_SETTINGS_MODULE` in `.env` chooses dev or prod. `config/__init__.py` loads `.env` first, and `manage.py`, `wsgi.py` and `asgi.py` have no default, so they refuse to start without it. A variable set on the host wins over `.env`. pytest is pinned to `config.settings.test` in `pyproject.toml`.
 - The server is ASGI, on Daphne in one process, for HTTP and the `/api/v1/ws/` socket. `config/asgi.py` routes both. `wsgi.py` remains but nothing runs it.
