@@ -315,12 +315,25 @@ def test_send_cannot_hold_a_worker_past_its_timeout(gemini):
     assert gemini.requests[0].extensions["timeout"]["read"] == provider.TIMEOUT_MS / 1000
 
 
+def test_send_can_cut_a_request_short(gemini):
+    provider.send("hi", timeout=5.5)
+
+    assert gemini.requests[0].extensions["timeout"]["read"] == 5.5
+
+
+def test_send_can_forbid_tool_calls(gemini):
+    provider.send("hi", tool_choice="none")
+
+    assert json.loads(gemini.requests[0].content)["generation_config"]["tool_choice"] == "none"
+
+
 def test_send_omits_options_nobody_set(gemini):
     provider.send("hi")
 
     body = json.loads(gemini.requests[0].content)
     assert "system_instruction" not in body
     assert "tools" not in body
+    assert "generation_config" not in body
 
 
 @pytest.mark.parametrize(
@@ -402,6 +415,21 @@ def test_a_tool_round_trip_can_replay_the_history(gemini):
 
 
 # admin
+
+
+@pytest.mark.django_db
+def test_generate_hands_the_callers_options_to_the_provider(limits, monkeypatch):
+    seen = {}
+
+    def fake_send(prompt, **options):
+        seen.update(options)
+        return REPLY
+
+    monkeypatch.setattr(provider, "send", fake_send)
+
+    generate(CHAT, "hi", system="Be brief", tools=[{}], tool_choice="none", timeout=5.5)
+
+    assert seen == {"system": "Be brief", "tools": [{}], "tool_choice": "none", "timeout": 5.5}
 
 
 @pytest.mark.django_db

@@ -15,8 +15,8 @@ How the LLM is reached. Built from the roadmap line, with no detailed phase prom
 - Never call `generate()` inside `transaction.atomic`: the lock would last the whole request, and a rollback would erase the row, leaving the request uncounted.
 - Limits are per minute, per day and per user per day, from environment variables. A day ends at midnight Pacific, when Gemini's quota resets. `user=None`, for reports, skips only the user limit. A refusal is DRF `Throttled` with `wait`, so `Retry-After` reaches clients.
 - Gemini's own 429 becomes `Throttled`. Other failures and unfinished replies become `AIUnavailable` (503). Only `completed` and `requires_action` reach the caller, so nothing acts on a truncated answer.
-- Phase 4's tool loop: pass the history as a list, then resend `[*history, *reply.steps, function_result]`. Steps go back unchanged, because thought steps carry signatures. `tests/test_ai.py` shows the shape.
-- Phase 4's tools call the same services, which raise HTTP errors. A tool must catch both `APIException` and `Http404`, because the task and team services use Django's `get_object_or_404`, and must validate ids from the LLM, because that function raises `ValueError` on a non-numeric id.
+- A tool loop passes the history as a list, then resends `[*history, *reply.steps, function_result]`. Steps go back unchanged, because thought steps carry signatures. `apps/assistant/services.py` is the worked example.
+- Tools call the same services as the views, which raise HTTP errors. A tool must catch both `APIException` and `Http404`, because the task and team services use Django's `get_object_or_404`, and must validate ids from the LLM, because that function raises `ValueError` on a non-numeric id.
 
 ## Decisions
 
@@ -25,7 +25,7 @@ How the LLM is reached. Built from the roadmap line, with no detailed phase prom
 - `TIMEOUT_MS` stays at 25 seconds, under gunicorn's 30, so a slower model needs that limit raised too.
 - `store=False`: history lives in Postgres, so Google needn't keep team data. This rules out `previous_interaction_id` and `background=True`.
 - The log holds no prompt or reply, so team data stays out of it and out of the admin. It has no purge job, because it grows by at most the daily limit.
-- Plain text and `tools` only for now. Structured output (`response_format`) and `generation_config` wait for a caller. `temperature` is deprecated in this API, so don't add it.
+- Plain text and `tools` only for now, plus `tool_choice`, which sits inside `generation_config`. Structured output (`response_format`) waits for a caller. `temperature` is deprecated in this API, so don't add it.
 
 ## SDK traps (google-genai 2.34.0)
 
@@ -37,7 +37,8 @@ How the LLM is reached. Built from the roadmap line, with no detailed phase prom
 ## Open
 
 - Real free-tier numbers sit behind AI Studio sign-in, so the limit defaults are guesses. The app's limits are a first fence, and Gemini's 429 is the second.
-- Free-tier terms: Google may use prompts and replies to improve its products, and human reviewers may read them. The terms say not to send sensitive, confidential or personal information. Decided by the user on 2026-11-02: the chatbot sends only seeded data, so this stays settled and needs no further choice.
+- Free-tier terms: Google may use prompts and replies to improve its products, and human reviewers may read them. The terms say not to send sensitive, confidential or personal information.
+- The chatbot and RAG always work from the signed-in user's actual data, on every team. "Seeded data" (user, 2026-11-02) only means test data we generate because no client can create data yet. It is not a restriction, so never gate a feature on it: seeded and real logins run the same flow.
 - The terms allow only paid services for clients offered to users in the EEA, Switzerland or the UK.
 - Limits are per Google project, so another app on the same project shares the quota and this count can't see it.
 - Embeddings aren't built. Phase 5 adds them through the same reserve, send and log path, and they have their own quota, so counts will need to filter by `model`.

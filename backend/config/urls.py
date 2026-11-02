@@ -30,6 +30,7 @@ api_patterns = [
     path("", include("apps.tasks.urls")),
     path("", include("apps.chat.urls")),
     path("", include("apps.notifications.urls")),
+    path("", include("apps.assistant.urls")),
 ]
 
 urlpatterns = [

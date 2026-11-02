@@ -9,7 +9,7 @@ from google.genai import types
 from google.genai._interactions import APIError, RateLimitError
 
 # Stays under gunicorn's 30-second worker timeout.
-# shortcut: monthly reports may need longer, so give send() a timeout in Phase 6 if they do.
+# Monthly reports may need longer. They run outside gunicorn, so pass `timeout` to send() then.
 TIMEOUT_MS = 25_000
 
 
@@ -42,10 +42,23 @@ def _client() -> genai.Client:
 
 
 def send(
-    prompt: str | list[dict], *, system: str | None = None, tools: list[dict] | None = None
+    prompt: str | list[dict],
+    *,
+    system: str | None = None,
+    tools: list[dict] | None = None,
+    tool_choice: str | None = None,
+    timeout: float | None = None,
 ) -> Reply:
-    """Make exactly one HTTP request. For a follow-up, pass the history plus `Reply.steps`."""
-    options = {"system_instruction": system, "tools": tools}
+    """Make exactly one HTTP request. For a follow-up, pass the history plus `Reply.steps`.
+
+    `timeout` is in seconds, for a caller sharing one deadline across several requests.
+    """
+    options = {
+        "system_instruction": system,
+        "tools": tools,
+        "generation_config": {"tool_choice": tool_choice} if tool_choice else None,
+        "timeout": timeout,
+    }
     try:
         interaction = _client().interactions.create(
             model=settings.AI_MODEL,

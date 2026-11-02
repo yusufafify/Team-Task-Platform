@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "apps.chat",
     "apps.notifications",
     "apps.ai",
+    "apps.assistant",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -135,9 +136,16 @@ AI_REQUESTS_PER_MINUTE = env.int("AI_REQUESTS_PER_MINUTE", default=10)
 AI_REQUESTS_PER_DAY = env.int("AI_REQUESTS_PER_DAY", default=200)
 AI_REQUESTS_PER_USER_PER_DAY = env.int("AI_REQUESTS_PER_USER_PER_DAY", default=30)
 
+SEED_USER_PASSWORD = env("SEED_USER_PASSWORD", default=None)
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "Team Task Platform API",
     "VERSION": "0.1.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
+    # Two models have a `role`, so both need a name. `RoleEnum` is already published.
+    "ENUM_NAME_OVERRIDES": {
+        "RoleEnum": "apps.teams.models.TeamMembership.Role",
+        "AssistantRoleEnum": "apps.assistant.models.AssistantMessage.Role",
+    },
 }

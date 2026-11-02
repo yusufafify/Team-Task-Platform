@@ -97,6 +97,8 @@ def change_member_role(actor: User, team_id: int, user_id: int, *, role: str) ->
         )
         if membership.role == LEADER and role != LEADER:
             _ensure_another_leader(team_id)
+            # The thread holds answers about the whole team, which a member may not see.
+            membership.assistant_messages.all().delete()
         membership.role = role
         membership.save(update_fields=["role"])
     return membership

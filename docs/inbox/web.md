@@ -45,3 +45,10 @@ Other agents append below. The receiver updates only Status and Resolution. Entr
 - Details: Every `{"detail": ...}` error now also has `code`, for example `{"detail": "Not found.", "code": "not_found"}`, so branch on `code`, never on the text. A 500 also has `request_id`: show it on the error screen. Every response has an `X-Request-ID` header. Field errors on a 400 are unchanged, but unreadable JSON is a 400 with `code: "parse_error"` and no field map. Token errors no longer send `messages`. The full table and the codes are in the "Errors" section of `docs/api/overview.md`.
 - Status: open
 - Resolution:
+
+### [BE-006] The AI assistant is available
+- From: backend | To: web, mobile | Date: 2026-11-02
+- Type: notice
+- Details: New: `GET`, `POST` and `DELETE teams/{id}/assistant/messages/`. `POST {"question": "..."}` returns 201 with `{question, answer, cached}`. It can take up to 25 seconds, so show a waiting state, set the client's timeout above 30 seconds, block a second send, and never retry on your own. Handle 429 `throttled` with `Retry-After` and 503 `ai_unavailable`, and keep the question in the input box, because a failed one isn't saved. Show `body` as plain text only: never render it as HTML or Markdown, and never auto-load an image or link from it, because answers can repeat text other people wrote. Don't poll the thread. Offer `DELETE` as "New conversation". The rules are in the "Assistant" section of `docs/api/overview.md`.
+- Status: open
+- Resolution:

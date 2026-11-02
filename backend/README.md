@@ -36,6 +36,8 @@ uv run python manage.py runserver
 
 `migrate` changes the Neon `main` branch, which also serves prod. After the first run, also run `uv run python manage.py createcachetable`.
 
+`uv run python manage.py seed_demo` creates or refreshes a demo team of four people with tasks, comments and chat, so the app has data before any client can add it. It writes to the same branch. Set `SEED_USER_PASSWORD` first, or the accounts can't log in. The leader is `mona@demo.example`, and the members are `sara@`, `omar@` and `nour@` on the same domain.
+
 ## Lint and format
 
 ```powershell

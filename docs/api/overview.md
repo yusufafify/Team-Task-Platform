@@ -82,6 +82,21 @@ There are no cookies here. The app keeps both tokens, in the device's encrypted 
 - A notification is created when a task is assigned, and when someone comments on a task you created or are assigned to. Its `title` is a fixed phrase, its `body` is the task's title. Due-soon, overdue, email and push arrive with Phase 8.
 - `POST device-tokens/` stores an Expo token. A token already on another account moves to the requester.
 
+## Assistant
+
+An AI assistant answers questions about the team's work, using only what the person asking is allowed to see. It reads and never changes anything, so it can't create or edit a task.
+
+- `teams/{id}/assistant/messages/`: `POST` asks, `GET` lists, `DELETE` clears.
+- Each person has one private thread per team. Not even a leader can read a member's thread.
+- `POST` takes `{"question": "..."}`, up to 2000 characters, and returns 201 with `{question, answer, cached}`. `question` and `answer` are saved messages, and `cached: true` means the answer was reused, so no AI request was spent.
+- A question can take up to 25 seconds, so show a waiting state, set the client's timeout above 30 seconds, and block a second send until the first returns. Don't retry on your own, because each try spends scarce AI requests.
+- On 429 (`throttled`), wait for `Retry-After`, which can be hours when the day's limit is used up. On 503 (`ai_unavailable`), let the user try again later. A failed question isn't saved, so keep its text in the input box.
+- Show `body` as plain text. Never render it as HTML or Markdown, and never load an image or open a link from it automatically. Answers can repeat text other people wrote in tasks and comments.
+- `GET` uses cursor pages, newest first, like chat: `{next, previous, results}`, with no `count`. A thread changes only when its owner asks a question, so never poll it.
+- `DELETE` returns 204 and clears the requester's thread only. Offer it as "New conversation".
+- The assistant remembers the last hour of a thread. Older messages stay readable, but it no longer sees them, so a follow-up after a long gap may need rephrasing.
+- A thread is deleted when its owner leaves the team, or stops being a leader.
+
 ## Stats
 
 `GET teams/{id}/stats/?start=YYYY-MM-DD&end=YYYY-MM-DD`

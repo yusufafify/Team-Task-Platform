@@ -569,6 +569,75 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/teams/{team_id}/assistant/messages/:
+    get:
+      operationId: teams_assistant_messages_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: path
+        name: team_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - teams
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAssistantMessageList'
+          description: ''
+    post:
+      operationId: teams_assistant_messages_create
+      parameters:
+      - in: path
+        name: team_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - teams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Turn'
+          description: ''
+    delete:
+      operationId: teams_assistant_messages_destroy
+      parameters:
+      - in: path
+        name: team_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - teams
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/teams/{team_id}/members/:
     get:
       operationId: teams_members_list
@@ -771,6 +840,33 @@ components:
           default: member
       required:
       - email
+    AssistantMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        role:
+          $ref: '#/components/schemas/AssistantRoleEnum'
+        body:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - body
+      - created_at
+      - id
+      - role
+    AssistantRoleEnum:
+      enum:
+      - user
+      - assistant
+      type: string
+      description: |-
+        * `user` - User
+        * `assistant` - Assistant
     Comment:
       type: object
       properties:
@@ -943,6 +1039,25 @@ components:
       - read_at
       - task
       - title
+    PaginatedAssistantMessageList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssistantMessage'
     PaginatedCommentList:
       type: object
       required:
@@ -1111,6 +1226,15 @@ components:
         * `medium` - Medium
         * `high` - High
         * `urgent` - Urgent
+    QuestionRequest:
+      type: object
+      properties:
+        question:
+          type: string
+          minLength: 1
+          maxLength: 2000
+      required:
+      - question
     Register:
       type: object
       properties:
@@ -1473,6 +1597,20 @@ components:
           minLength: 1
       required:
       - refresh
+    Turn:
+      type: object
+      properties:
+        question:
+          $ref: '#/components/schemas/AssistantMessage'
+        answer:
+          $ref: '#/components/schemas/AssistantMessage'
+        cached:
+          type: boolean
+          description: True when no AI request was spent.
+      required:
+      - answer
+      - cached
+      - question
     User:
       type: object
       properties:

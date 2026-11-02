@@ -34,6 +34,8 @@ def generate(
     team: Team | None = None,
     system: str | None = None,
     tools: list[dict] | None = None,
+    tool_choice: str | None = None,
+    timeout: float | None = None,
 ) -> provider.Reply:
     """The one way to reach the LLM. Pass `user=None` for work no person asked for.
 
@@ -43,7 +45,9 @@ def generate(
     call = _reserve(feature, user, team)
     started = time.monotonic()
     try:
-        reply = provider.send(prompt, system=system, tools=tools)
+        reply = provider.send(
+            prompt, system=system, tools=tools, tool_choice=tool_choice, timeout=timeout
+        )
     except provider.ProviderError as exc:
         _finish(call, started, AICall.Status.FAILED, error=str(exc))
         if isinstance(exc, provider.QuotaExceeded):

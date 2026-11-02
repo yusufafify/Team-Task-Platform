@@ -5,7 +5,7 @@ Hard cap about 80 lines.
 ## Current state
 
 - Date: 2026-11-02
-- Roadmap phase: Phases 1 to 3 are ticked, with CI deferred. Phase 4 is next.
+- Roadmap phase: Phases 1 to 4 are ticked, with CI deferred. Phase 5 (RAG) is next.
 - Repository: `yusufafify/Team-Task-Platform`, working branch `backend`. Only the user commits.
 
 ## Done this session
@@ -20,8 +20,19 @@ Hard cap about 80 lines.
 - Added the user's graphify rule to `CLAUDE.md` and memory. Tested details are in `.claude/rules/agent-setup.md`. The first `graphify update` took the graph from 105 to 634 nodes and dropped 43 concepts extracted from docs. The old graph is in `graphify-out/curated-2026-11-01/`.
 - At the user's request, checked auth and errors against software-backend, clean code and SOLID before Phase 4. Added `config/exceptions.py` (stable `code`, Django `ValidationError` as 400, which fixed a crafted-cursor 500), `config/request_id.py`, and a test that walks every URL. Decisions are in `.claude/rules/api.md`. Published as BE-005, with a changelog entry. `openapi.yaml` regenerated with no diff.
 - Split `.claude/rules/api-limits.md` out of `api.md`, which was over the 50-line cap.
+- Built Phase 4 from the roadmap line: `apps/assistant` with snapshot, four read-only tools, tool loop and answer cache. Design is in `.claude/rules/assistant.md`. Published as BE-006, with a changelog entry, overview section and regenerated `openapi.yaml`.
+- `send()` and `generate()` gained `tool_choice` and `timeout`. `change_member_role` now deletes a demoted leader's thread.
+- Added `seed_demo` and `SEED_USER_PASSWORD`.
+- Corrected a misreading: "seeded data only" was never a restriction. See `.claude/rules/ai.md`.
+- With the user's approval: `migrate assistant` and `seed_demo` ran on `main`, and 15 Gemini requests were spent. `main` now has 5 users, the Demo Team of 4, 10 tasks, 3 comments and 3 messages. Both test threads were cleared.
 
 ## Verification
+
+- Phase 4: the full suite ran 442 passed, against faked Gemini on the test branch. Only the system prompt's wording changed after that, and the assistant and AI test files were rerun, not the whole suite. Ruff, `makemigrations --check` and `spectacular --validate --fail-on-warn` are clean. `openapi.yaml` gained 138 lines and lost none.
+- 20 of 20 deliberate breaks were caught, each removing one safeguard, including role scoping, thread privacy and each cache rule. One break first produced invalid Python and was redone. The django-reviewer pass found one defect, now fixed: `get_task` cut the description it promised in full.
+- Live, on `runserver` with real JWTs and real Gemini, as a leader and a member, 15 requests, all `succeeded`: snapshot answers, the cache spending no request, tools, history replay without thought steps, `tool_choice: "none"` after function steps, `is_error`, 401 with no token, and `DELETE`. Answers were read by hand and match the seeded data. A member got none of a teammate's work, even when told to ignore its instructions.
+- That run found a real bug the check first passed: the prompt made the model refuse the asker's own request. Fixed and retested live. The member and injection questions ran on the old wording, but their limits are enforced in Python.
+- Not tested: text planted in a comment against the live model, gunicorn, and `check --deploy`.
 
 - Live on Gemini with the user's key, through `provider.send`: plain reply, tool request, and a tool round trip replaying `reply.steps` with their thought step. All worked on `gemini-3.5-flash-lite`. These checks used 11 requests.
 - The default model changed from `gemini-3.8-flash` after its first real request hit the 25-second limit. Measurements are in `.claude/rules/ai.md`.
@@ -39,7 +50,7 @@ Nothing.
 ## Next steps
 
 1. User commits this session's changes.
-2. Phase 4: the chatbot sends only seeded data to Gemini, by the user's decision. The roadmap has seed data in Phase 7, so Phase 4 needs some seeded data earlier. Seeding `main` needs the user's approval.
+2. Phase 5: RAG. The user wants it to work from the signed-in user's actual data, like the chatbot. The tool loop and scoping are ready to reuse. Set `SEED_USER_PASSWORD` in `.env` and rerun `seed_demo` before anyone logs in as a demo account.
 3. When the user clears the billing lock, run the Backend workflow, because Phases 1 to 3 have never run in CI.
 4. For Phase 8 (deployment): hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api-limits.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`.
 
@@ -58,6 +69,6 @@ None: the inbox was empty on 2026-11-02.
 
 ## History
 
-- 2026-11-02: Phase 3 AI provider layer built.
 - 2026-11-02: Phase 3 migrated, checked with a real call and ticked; graphify rule added.
 - 2026-11-02: error codes, request IDs and a route guard test added before Phase 4.
+- 2026-11-02: Phase 4 chatbot built, migrated, seeded, checked live and ticked.
