@@ -7,14 +7,12 @@
   "includeExamples": false,
   "tailwind": true,
   "projectPreset": "default",
-  "routerOnly": true,
+  "routerOnly": false,
   "addOnOptions": {},
   "git": false,
   "install": true,
   "intent": true,
   "version": 1,
   "framework": "react",
-  "chosenAddOns": [
-    "eslint"
-  ]
+  "chosenAddOns": ["eslint"]
 }

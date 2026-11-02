@@ -1,0 +1,10 @@
+.agents/
+.claude/
+.tanstack/
+dist/
+node_modules/
+graphify-out/
+src/routeTree.gen.ts
+notion-DESIGN (1).md
+package-lock.json
+skills-lock.json

@@ -11,3 +11,12 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
+.cache
+cache
+
+# Env files hold per-machine settings; only the template is committed.
+.env.*
+!.env.example
+.claude
+.agents
+graphify-output
