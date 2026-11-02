@@ -5,6 +5,8 @@ from .base import env
 
 DEBUG = env.bool("DJANGO_DEBUG", default=True)
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="dev-only-not-secret")
+# Local work runs over plain HTTP, where a browser would refuse a Secure cookie.
+AUTH_COOKIE_SECURE = False
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 # Neon's pooler is PgBouncer in transaction mode, which can't keep a server-side cursor open.
 DATABASES = {

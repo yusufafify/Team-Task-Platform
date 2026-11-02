@@ -17,19 +17,32 @@ ASGI = ["-c", f"import config.asgi; {PRINT_MODULE}"]
 PROD_VALUES = """
 DJANGO_SECRET_KEY=test-only
 DJANGO_ALLOWED_HOSTS=example.com
+DJANGO_NUM_PROXIES=2
 DATABASE_URL=postgres://localhost:5432/test
 CORS_ALLOWED_ORIGINS=https://example.com
+GEMINI_API_KEY=test-only
+RESEND_API_KEY=test-only
 """
 
 
 def run_with_env_file(tmp_path: Path, env_file: str, args: list[str]):
     shutil.copy(BACKEND / "manage.py", tmp_path)
-    shutil.copytree(
-        BACKEND / "config", tmp_path / "config", ignore=shutil.ignore_patterns("__pycache__")
-    )
+    for package in ("config", "apps"):
+        shutil.copytree(
+            BACKEND / package, tmp_path / package, ignore=shutil.ignore_patterns("__pycache__")
+        )
     (tmp_path / ".env").write_text(env_file)
     # The test process already holds these from pytest-django and the real .env, and they'd win.
-    hidden = {"DJANGO_SETTINGS_MODULE", "DATABASE_URL", "DIRECT_URL", "TEST_DATABASE_URL"}
+    hidden = {
+        "DJANGO_SETTINGS_MODULE",
+        "DJANGO_NUM_PROXIES",
+        "DATABASE_URL",
+        "DIRECT_URL",
+        "TEST_DATABASE_URL",
+        "GEMINI_API_KEY",
+        "RESEND_API_KEY",
+        "SCHEDULER_IN_SERVER",
+    }
     env = {k: v for k, v in os.environ.items() if k not in hidden}
     return subprocess.run(
         [sys.executable, *args], cwd=tmp_path, env=env, capture_output=True, text=True
@@ -174,7 +187,92 @@ def test_prod_logs_errors_to_the_console(tmp_path):
 
     result = run_with_env_file(tmp_path, env_file, args)
 
-    assert re.search(r"\d{4}-\d\d-\d\d \S+ ERROR django\.request probe-error", result.stderr)
+    # Outside a request the ID is "-", and the format must still work.
+    assert re.search(r"\d{4}-\d\d-\d\d \S+ ERROR django\.request \[-\] probe-error", result.stderr)
+
+
+def test_prod_takes_its_proxy_count_from_the_environment(tmp_path):
+    env_file = f"DJANGO_SETTINGS_MODULE=config.settings.prod{PROD_VALUES}"
+    print_proxies = "from rest_framework.settings import api_settings as s; print(s.NUM_PROXIES)"
+    args = ["manage.py", "shell", "-v", "0", "-c", print_proxies]
+
+    result = run_with_env_file(tmp_path, env_file, args)
+
+    assert result.stdout.strip() == "2"
+
+
+def test_prod_marks_auth_cookies_secure(tmp_path):
+    env_file = f"DJANGO_SETTINGS_MODULE=config.settings.prod{PROD_VALUES}"
+    print_flag = "from django.conf import settings; print(settings.AUTH_COOKIE_SECURE)"
+    args = ["manage.py", "shell", "-v", "0", "-c", print_flag]
+
+    result = run_with_env_file(tmp_path, env_file, args)
+
+    assert result.stdout.strip() == "True"
+
+
+def test_prod_refuses_to_start_without_a_proxy_count(tmp_path):
+    values = PROD_VALUES.replace("DJANGO_NUM_PROXIES=2", "")
+    env_file = f"DJANGO_SETTINGS_MODULE=config.settings.prod{values}"
+
+    result = run_with_env_file(tmp_path, env_file, MANAGE)
+
+    assert result.returncode != 0
+    assert "DJANGO_NUM_PROXIES" in result.stderr
+
+
+def test_prod_refuses_to_start_without_a_gemini_key(tmp_path):
+    values = PROD_VALUES.replace("GEMINI_API_KEY=test-only", "")
+    env_file = f"DJANGO_SETTINGS_MODULE=config.settings.prod{values}"
+
+    result = run_with_env_file(tmp_path, env_file, MANAGE)
+
+    assert result.returncode != 0
+    assert "GEMINI_API_KEY" in result.stderr
+
+
+def test_prod_refuses_to_start_without_a_resend_key(tmp_path):
+    values = PROD_VALUES.replace("RESEND_API_KEY=test-only", "")
+    env_file = f"DJANGO_SETTINGS_MODULE=config.settings.prod{values}"
+
+    result = run_with_env_file(tmp_path, env_file, MANAGE)
+
+    assert result.returncode != 0
+    assert "RESEND_API_KEY" in result.stderr
+
+
+COUNT_SCHEDULED = [
+    "-c",
+    "import asyncio, config.asgi; from daphne.server import twisted_loop as loop; "
+    "print(len(asyncio.all_tasks(loop)))",
+]
+
+
+def test_the_schedule_starts_on_the_servers_own_loop_in_prod(tmp_path):
+    env_file = f"DJANGO_SETTINGS_MODULE=config.settings.prod{PROD_VALUES}"
+
+    result = run_with_env_file(tmp_path, env_file, COUNT_SCHEDULED)
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "1"
+
+
+def test_prod_can_hand_the_schedule_to_its_own_process(tmp_path):
+    env_file = f"DJANGO_SETTINGS_MODULE=config.settings.prod{PROD_VALUES}SCHEDULER_IN_SERVER=false"
+
+    result = run_with_env_file(tmp_path, env_file, COUNT_SCHEDULED)
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "0"
+
+
+def test_dev_never_runs_the_schedule_because_it_shares_a_database_with_prod(tmp_path):
+    env_file = "DJANGO_SETTINGS_MODULE=config.settings.dev\n"
+
+    result = run_with_env_file(tmp_path, env_file, COUNT_SCHEDULED)
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "0"
 
 
 def test_settings_flag_reaches_the_test_branch(tmp_path):

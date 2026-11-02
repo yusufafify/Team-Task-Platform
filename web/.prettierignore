@@ -1,0 +1,9 @@
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+.agents
+.claude
+AGENTS.md
+graphify-out
+src/routeTree.gen.ts
+notion-DESIGN (1).md

@@ -34,6 +34,6 @@ uv run python manage.py spectacular --file ../docs/api/openapi.yaml   # schema e
 - Before installing, check `.venv/Scripts/python.exe --version` and that `sys.prefix` is `/backend/.venv`. If either is wrong, stop and ask. If uv is unavailable, use `.venv/Scripts/python.exe -m pip install <pkg>` and tell the user.
 - Ruff runs rules E, F, I, UP, B and DJ at line length 100.
 - Ruff excludes `.claude`, because installed skills ship files that fail lint and format checks.
-- gunicorn can't run on Windows. Use `runserver` locally; gunicorn is for the Linux deployment.
+- `runserver` runs Daphne, because `daphne` is first in `INSTALLED_APPS`, so sockets work locally. Prod runs Daphne too, from the `Dockerfile`, which pins uv at 0.13.6. Docker isn't installed on this machine, so its steps were rehearsed by hand, not built.
 - `uv.exe` is in `%USERPROFILE%\.local\bin`. A shell started before the install may not see it until restarted.
 - uv's "Failed to hardlink" warning is harmless: its cache is on C: and the project on D:.

@@ -16,8 +16,27 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
+
+from config import views
+
+handler400 = "config.views.bad_request"
+handler404 = "config.views.not_found"
+handler500 = "config.views.server_error"
+
+api_patterns = [
+    path("auth/", include("apps.accounts.urls")),
+    path("", include("apps.teams.urls")),
+    path("", include("apps.tasks.urls")),
+    path("", include("apps.chat.urls")),
+    path("", include("apps.notifications.urls")),
+    path("", include("apps.assistant.urls")),
+    path("", include("apps.reports.urls")),
+]
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("healthz", views.healthz),
+    path("readyz", views.readyz),
+    path("api/v1/", include(api_patterns)),
 ]

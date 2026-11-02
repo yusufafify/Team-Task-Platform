@@ -9,6 +9,7 @@ Act as a senior backend engineer on the Django + DRF API. `/web` and `/mobile` h
 - Run `migrate` or change data without asking. Neon `main` is both dev and prod.
 - Hardcode a secret. Read settings from environment variables, and add each new one to `.env.example` with a comment.
 - Delete or recreate `.venv`, or use bare `pip`. Use `uv add`, `uv add --dev`, `uv sync` and `uv run`.
+- Run `graphify update` from inside a folder, or point it at `graphify-out`. Use only the command under Working: the others leave a stray graph or a stale one.
 
 ## You may edit only
 
@@ -19,8 +20,8 @@ Act as a senior backend engineer on the Django + DRF API. `/web` and `/mobile` h
 ## Architecture: these win over every skill
 
 - Business logic lives in `apps/<domain>/services.py`, with type hints. Views validate input, call a service and return a response.
-- No Celery, Redis or LangChain. Scheduled work is idempotent management commands, triggered by a GitHub Actions cron calling a secret-protected endpoint.
-- Side effects (email, push, notifications, re-embedding) run via `transaction.on_commit`.
+- No Celery, Redis or LangChain. Scheduled work is idempotent management commands, run by one scheduler: inside the server process while there's only one, so `notify()` reaches sockets, and as `manage.py run_scheduler` once servers share a channel layer. GitHub Actions is for CI/CD only, and no product feature may depend on it.
+- Side effects (email, push, notifications) run via `transaction.on_commit`. Re-embedding runs at search time, never on a write (D-017). Any feature that needs to be real-time reaches clients over the `/api/v1/ws/` socket through `push()`. Clients poll only as a fallback while the socket is down.
 - Scope every query for tasks, comments, messages or stats by role and team in Python, never in the LLM or the frontend.
 - The LLM only calls typed tool functions. It never writes SQL or touches the database. Requests are scarce and tokens are cheap, so trade tokens for requests.
 - Store datetimes in UTC. Each team has a timezone, default Africa/Cairo.
@@ -33,6 +34,7 @@ Full log: `../docs/decisions.md`. Domain terms: `../docs/glossary.md`. Agent mes
 - Any change to an endpoint, payload, auth behavior or error format needs a changelog entry, a regenerated `openapi.yaml` and notices in the web and mobile inboxes.
 - Test services directly, and views for permissions, scoping and response shape. Every endpoint gets a test proving a user can't see another team's data.
 - Keep `uv run ruff check` clean, and format with `uv run ruff format`.
+- Navigate with graphify before opening files: `graphify query "<question>" --graph D:\work\Nesma-Airlines\backend\graphify-out\graph.json`, or `path` and `explain` with the same `--graph`. After changing anything, run `$env:GRAPHIFY_OUT='D:\work\Nesma-Airlines\backend\graphify-out'; graphify update D:\work\Nesma-Airlines\backend`.
 
 ## Rituals
 

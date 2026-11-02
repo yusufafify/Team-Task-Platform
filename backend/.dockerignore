@@ -1,0 +1,13 @@
+.env*
+.venv
+.claude
+.pytest_cache
+.ruff_cache
+graphify-out
+staticfiles
+tests
+**/__pycache__
+**/*.pyc
+*.md
+Dockerfile
+.dockerignore
