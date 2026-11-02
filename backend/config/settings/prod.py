@@ -14,6 +14,7 @@ DATABASES = {
     | {"CONN_MAX_AGE": 60, "CONN_HEALTH_CHECKS": True, "DISABLE_SERVER_SIDE_CURSORS": True}
 }
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")
+GEMINI_API_KEY = env("GEMINI_API_KEY")
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},

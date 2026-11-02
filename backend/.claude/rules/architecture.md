@@ -14,6 +14,7 @@ What's built, where it lives, and how it's configured.
 
 - Phase 1: five apps with models, initial migrations and admin. Apps have no `apps.py`, because Django's default config is enough.
 - Phase 2: `services.py`, `serializers.py`, `views.py` and `urls.py` in all five apps, under `/api/v1/`, with no schema change. Stats sit in `apps/tasks`.
+- Phase 3: `apps/ai` holds the provider, limits and call log. It has no endpoints yet, so the API didn't change.
 - Dependency direction: `tasks` services import `notifications` and `teams` services. `teams` and `notifications` services import only `tasks.models`, which avoids a cycle.
 - Settings split: `base.py` holds shared values. `dev.py` and `prod.py` set `SECRET_KEY`, `ALLOWED_HOSTS`, `DATABASES` and `CORS_ALLOWED_ORIGINS`.
 - `DJANGO_SETTINGS_MODULE` in `.env` chooses dev or prod. `config/__init__.py` loads `.env` first, and `manage.py`, `wsgi.py` and `asgi.py` have no default, so they refuse to start without it. A variable set on the host wins over `.env`. pytest is pinned to `config.settings.test` in `pyproject.toml`.
@@ -47,3 +48,8 @@ What's built, where it lives, and how it's configured.
 | `DIRECT_URL` | Direct host, used by `migrate` | Direct host, used by `migrate` |
 | `CORS_ALLOWED_ORIGINS` | Default localhost 5173, 8081 | Required |
 | `DJANGO_SECURE_HSTS_SECONDS` | Unused | Default 3600 |
+| `GEMINI_API_KEY` | Needed only by AI features | Required |
+| `AI_MODEL` | Default `gemini-3.5-flash-lite` | Same |
+| `AI_REQUESTS_PER_MINUTE` | Default 10 | Same |
+| `AI_REQUESTS_PER_DAY` | Default 200 | Same |
+| `AI_REQUESTS_PER_USER_PER_DAY` | Default 30 | Same |

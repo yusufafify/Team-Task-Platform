@@ -12,6 +12,7 @@ Index only: this is the one map of backend memory. Regions in `.claude/rules/` l
 | `.claude/rules/scheduling.md` | How scheduled jobs run, and host and Neon limits | Management commands, `tasks.py` | Planning Phase 8, or choosing a host |
 | `.claude/rules/database.md` | Neon branches, connections, migrations | Models, migrations, settings, `manage.py`, `.env.example` | Running `migrate` or any database command |
 | `.claude/rules/testing.md` | pytest setup, test database rules | `tests/`, `test.py`, `pyproject.toml` | Running pytest, or debugging a failure |
+| `.claude/rules/ai.md` | LLM gateway, limits, call log, SDK traps, data-use terms | `apps/ai/`, `tests/test_ai.py` | Planning Phases 4 to 6, or any Gemini work |
 | `.claude/rules/tooling.md` | Commands, uv, ruff, Windows quirks | `pyproject.toml`, `uv.lock`, `.python-version` | Installing, running commands, tool errors |
 | `.claude/rules/agent-setup.md` | Permissions, skills, graphify, `CLAUDE.md` limits | `.claude/`, `CLAUDE.md` | Permission or skill problems |
 | `.claude/skills-index.md` | Every skill, what to ignore, conflicts | Never | Before relying on a skill |

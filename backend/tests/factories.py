@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from factory.django import DjangoModelFactory
 
+from apps.ai.models import AICall
 from apps.chat.models import Message
 from apps.notifications.models import Notification
 from apps.tasks.models import Comment, Task
@@ -66,3 +67,11 @@ class NotificationFactory(DjangoModelFactory):
     recipient = factory.SubFactory(UserFactory)
     kind = Notification.Kind.TASK_ASSIGNED
     title = "You were assigned"
+
+
+class AICallFactory(DjangoModelFactory):
+    class Meta:
+        model = AICall
+
+    feature = AICall.Feature.CHAT
+    model = "gemini-test"

@@ -20,6 +20,7 @@ DJANGO_ALLOWED_HOSTS=example.com
 DJANGO_NUM_PROXIES=2
 DATABASE_URL=postgres://localhost:5432/test
 CORS_ALLOWED_ORIGINS=https://example.com
+GEMINI_API_KEY=test-only
 """
 
 
@@ -37,6 +38,7 @@ def run_with_env_file(tmp_path: Path, env_file: str, args: list[str]):
         "DATABASE_URL",
         "DIRECT_URL",
         "TEST_DATABASE_URL",
+        "GEMINI_API_KEY",
     }
     env = {k: v for k, v in os.environ.items() if k not in hidden}
     return subprocess.run(
@@ -213,6 +215,16 @@ def test_prod_refuses_to_start_without_a_proxy_count(tmp_path):
 
     assert result.returncode != 0
     assert "DJANGO_NUM_PROXIES" in result.stderr
+
+
+def test_prod_refuses_to_start_without_a_gemini_key(tmp_path):
+    values = PROD_VALUES.replace("GEMINI_API_KEY=test-only", "")
+    env_file = f"DJANGO_SETTINGS_MODULE=config.settings.prod{values}"
+
+    result = run_with_env_file(tmp_path, env_file, MANAGE)
+
+    assert result.returncode != 0
+    assert "GEMINI_API_KEY" in result.stderr
 
 
 def test_settings_flag_reaches_the_test_branch(tmp_path):

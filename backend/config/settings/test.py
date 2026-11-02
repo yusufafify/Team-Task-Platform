@@ -17,3 +17,5 @@ DATABASES = {"default": test_database}
 REST_FRAMEWORK = REST_FRAMEWORK | {"TEST_REQUEST_DEFAULT_FORMAT": "json"}
 # The real hasher is slow by design, and every login test would pay for it.
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+# A test that forgets its stub then fails, instead of spending the real quota.
+GEMINI_API_KEY = "test-only"

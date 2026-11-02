@@ -4,23 +4,25 @@ Hard cap about 80 lines.
 
 ## Current state
 
-- Date: 2026-11-01
-- Roadmap phase: Phases 1 and 2 ticked at the user's request, with CI deferred. Both are committed. Phase 3 is now the AI provider layer, not started
+- Date: 2026-11-02
+- Roadmap phase: Phase 3 (AI provider layer) built, passing tests and confirmed against live Gemini, but not ticked: its migration isn't on `main`, so `generate()` hasn't run end to end there. Phases 1 and 2 are committed, with CI deferred.
 - Repository: `yusufafify/Team-Task-Platform`, working branch `backend`. Only the user commits.
 
 ## Done this session
 
-- Reordered the roadmap at the user's request: deployment + event pipeline moved as one phase from 3 to 8, and old Phases 4 to 8 became 3 to 7. Renumbered every reference and sent BE-004 to web and mobile. No code or endpoint changed.
-- Built Phase 2 with no detailed prompt, from the roadmap line and glossary. Patterns, product decisions and limits are in `.claude/rules/api.md`.
-- Endpoints under `/api/v1/`: auth, teams and members, tasks, comments, chat, notifications, device tokens, stats. Also JSON errors, pagination, login and register throttles, `/healthz` and `/readyz`.
-- Our apps have no schema change. `DeviceToken`'s validator moved to a module constant, and `makemigrations --check` confirms no drift.
-- The user then asked to fix the listed risks before committing. Done: refresh rotation, token blacklist, `auth/logout/` and `auth/logout-all/`; required `DJANGO_NUM_PROXIES`; a login lockout fix; stricter client polling rules, sent as BE-002.
-- With the user's approval, applied the 12 `token_blacklist` migrations to `main`: 35 applied, none pending, both new tables empty. The SQL touched only those two tables.
-- The user then chose `HttpOnly` cookies for both web tokens, and the encrypted keychain for mobile through separate `auth/mobile/*` endpoints. Built and sent as BE-003, with no further migration.
-- `uv run pytest` passed 211 of 211 on `test_neondb`. ruff is clean, `spectacular --validate --fail-on-warn` is clean, and `check --deploy` passes with throwaway prod values.
-- A `django-reviewer` pass found 4 bugs and 1 awkward default, each confirmed by a failing test and fixed. Lessons are in `.claude/rules/api.md`.
-- Published `docs/api/openapi.yaml`, `overview.md` and the changelog entry, and sent BE-001 to the web and mobile inboxes.
-- Not run: a real server, any client, or concurrent requests. The leader lock and throttles were tested only one request at a time.
+- Built Phase 3 from the roadmap line, with no detailed prompt. Design, decisions and SDK traps are in `.claude/rules/ai.md`.
+- New `apps/ai`: `generate()` in `services.py` is the one gateway, `provider.py` the only file importing `google-genai`, and `AICall` both the log and the limits' counter. A Postgres advisory lock makes reserving a slot atomic. The admin is read-only.
+- Added `google-genai` 2.34.0, and five settings in `.env.example`. `GEMINI_API_KEY` is required in prod. Test settings force a fake key, so a test can't spend real quota.
+- Found by driving the real SDK against a fake HTTP transport: `HttpRetryOptions(attempts=0)` still retries once, so `_client()` sets `retry_config = None`. Each 429 would otherwise have cost two requests or more.
+- No endpoint changed. The generated schema matches `docs/api/openapi.yaml`, so no changelog entry or inbox notice was needed.
+- `uv run pytest` passed 245 of 245 on `test_neondb`, and ruff is clean. All 9 deliberate breaks of a safeguard were caught, including removing the lock. A review pass led to 2 small fixes: the longer wait wins, and the timeout now has a test.
+
+## Verification
+
+- Live on Gemini with the user's key, through `provider.send`: plain reply, tool request, and a tool round trip replaying `reply.steps` with their thought step. All worked on `gemini-3.5-flash-lite`. These checks used 11 requests.
+- The default model changed from `gemini-3.8-flash` after its first real request hit the 25-second limit. Measurements are in `.claude/rules/ai.md`. After that one-string change, the provider tests were rerun, not the whole suite.
+- Not run: `generate()` against a real call, because it needs the table. Also a real server, and `check --deploy` this session.
+- `migrate` not run on `main`, so `ai_aicall` doesn't exist there yet. Nothing calls `generate()` until Phase 4, so nothing is broken.
 
 ## In progress
 
@@ -28,10 +30,13 @@ Nothing.
 
 ## Next steps
 
-1. User commits the roadmap reorder.
-2. When the user clears the billing lock, run the Backend workflow, because Phases 1 and 2 were ticked without it.
-3. Wait for the Phase 3 prompt (AI provider layer).
-4. For Phase 8 (deployment): hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`.
+1. Optional: the user adds the three `AI_REQUESTS_*` limits to `.env`, just under what AI Studio shows for `gemini-3.5-flash-lite`. The defaults are guesses, because the real numbers need sign-in. `GEMINI_API_KEY` is already in `.env`.
+2. With the user's approval, `uv run python manage.py migrate ai` on `main`. It's one new empty table, and `sqlmigrate` showed nothing else.
+3. Check one real call: `uv run python manage.py shell -v 0 -c "from apps.ai.services import generate; print(generate('chat', 'Reply with OK.').text)"`, then see the row in the admin. Tick Phase 3 after that.
+4. User commits.
+5. Before Phase 4, the user decides how to handle the free tier's data terms (see `.claude/rules/ai.md`, Open): Google may use prompts, and team data would be in them.
+6. When the user clears the billing lock, run the Backend workflow, because Phases 1 to 3 have never run in CI.
+7. For Phase 8 (deployment): hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`.
 
 ## Blockers / waiting on other agents
 
@@ -43,7 +48,7 @@ Nothing.
 
 ## Inbox processed up to
 
-None: the inbox was empty on 2026-11-01.
+None: the inbox was empty on 2026-11-02.
 
 ## History
 
@@ -51,3 +56,4 @@ None: the inbox was empty on 2026-11-01.
 - 2026-11-01: Phase 1 models, migrations, admin and CI built.
 - 2026-11-01: Phase 2 API built, with the token blacklist applied to `main`.
 - 2026-11-01: roadmap reordered, deployment + event pipeline moved to Phase 8.
+- 2026-11-02: Phase 3 AI provider layer built, awaiting migration and a live check.

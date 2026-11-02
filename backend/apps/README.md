@@ -7,5 +7,4 @@ Rule: one app per domain; business logic in `services.py`.
 - `tasks`: tasks and their comments.
 - `chat`: team messages.
 - `notifications`: in-app notifications and Expo device tokens.
-
-Planned: `ai`, from Phase 3.
+- `ai`: the LLM provider, rate limits and call log.

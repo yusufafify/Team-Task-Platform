@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "apps.tasks",
     "apps.chat",
     "apps.notifications",
+    "apps.ai",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -123,6 +124,13 @@ SIMPLE_JWT = {
 }
 AUTH_COOKIE_SECURE = True
 CORS_ALLOW_CREDENTIALS = True
+
+GEMINI_API_KEY = env("GEMINI_API_KEY", default=None)
+# Measured 2026-11-02 on the free tier: about 1s here, 93s or more on gemini-3.8-flash.
+AI_MODEL = env("AI_MODEL", default="gemini-3.5-flash-lite")
+AI_REQUESTS_PER_MINUTE = env.int("AI_REQUESTS_PER_MINUTE", default=10)
+AI_REQUESTS_PER_DAY = env.int("AI_REQUESTS_PER_DAY", default=200)
+AI_REQUESTS_PER_USER_PER_DAY = env.int("AI_REQUESTS_PER_USER_PER_DAY", default=30)
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Team Task Platform API",
