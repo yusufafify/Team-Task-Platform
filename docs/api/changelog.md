@@ -63,3 +63,8 @@ Newest entries go at the bottom. Entry format:
 - Change: changed
 - Breaking: no
 - Notes: Client rule only, with no server change. After 3 failed reconnects, clients poll as a fallback until the socket is back. Never poll while it's up.
+
+## 2026-11-02 — `GET /api/v1/teams/{team_id}/reports/`
+- Change: added
+- Breaking: no
+- Notes: Monthly AI reports, newest month first, for leaders only: a member gets 403 and a stranger 404. Each has `month`, frozen `stats` and `members` numbers from the server, and a plain-text `body` written by the AI. Clients can only read them. No existing endpoint changed.

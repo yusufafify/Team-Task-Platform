@@ -16,6 +16,7 @@ Index only: this is the one map of backend memory. Regions in `.claude/rules/` l
 | `.claude/rules/ai.md` | LLM gateway, limits, call log, SDK traps, data-use terms | `apps/ai/`, `tests/test_ai.py` | Planning Phases 4 to 6, or any Gemini work |
 | `.claude/rules/assistant.md` | Chatbot flow, snapshot, tools, answer cache, seed command | `apps/assistant/`, `apps/teams/management/`, assistant and seed tests | Changing the chatbot, or planning Phase 5 |
 | `.claude/rules/retrieval.md` | RAG: search tool, embeddings, why no vector index | `apps/assistant/retrieval.py`, `apps/assistant/management/**`, `tests/test_retrieval.py` | Changing search, or any embedding work |
+| `.claude/rules/reports.md` | Monthly reports: command, scoping, what's frozen | `apps/reports/**`, report tests | Changing reports, or scheduling them in Phase 8 |
 | `.claude/rules/tooling.md` | Commands, uv, ruff, Windows quirks | `pyproject.toml`, `uv.lock`, `.python-version` | Installing, running commands, tool errors |
 | `.claude/rules/agent-setup.md` | Permissions, skills, graphify, `CLAUDE.md` limits | `.claude/`, `CLAUDE.md` | Permission or skill problems |
 | `.claude/skills-index.md` | Every skill, what to ignore, conflicts | Never | Before relying on a skill |
@@ -23,8 +24,7 @@ Index only: this is the one map of backend memory. Regions in `.claude/rules/` l
 
 ## Rules
 
-- Save durable facts only, each in the region it belongs to.
-- New topic: create `.claude/rules/<topic>.md` and add one row above. No other file links to a region.
+- Save durable facts only, each in its region. New topic: create `.claude/rules/<topic>.md` and add one row above. No other file links to a region.
 - Every region needs `paths:` frontmatter listing the files it covers. Without it, the file loads every session.
 - A rule that prevents real damage goes in `CLAUDE.md`, because that always loads. Regions hold everything else.
 - Keep each region under 50 lines, and this file at 30: one row per region, no facts. When a region grows, condense it or split it, and update this table.

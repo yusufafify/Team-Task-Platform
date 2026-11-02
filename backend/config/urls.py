@@ -31,6 +31,7 @@ api_patterns = [
     path("", include("apps.chat.urls")),
     path("", include("apps.notifications.urls")),
     path("", include("apps.assistant.urls")),
+    path("", include("apps.reports.urls")),
 ]
 
 urlpatterns = [

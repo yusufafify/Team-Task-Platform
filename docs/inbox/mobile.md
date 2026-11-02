@@ -66,3 +66,10 @@ Other agents append below. The receiver updates only Status and Resolution. Entr
 - Details: This corrects BE-007, which said not to poll at all. Keep the socket as the main path, and never poll while it's up. If 3 reconnects in a row fail, the network may be blocking sockets, so fetch the first page of messages for the open chat and the unread count at most every 10 seconds, only while that screen is visible. Stop after 2 minutes with no input, run no timer in the background, keep trying to reconnect, and stop polling once the socket connects. The rules are under "Live socket" in `docs/api/overview.md`. No endpoint changed.
 - Status: open
 - Resolution:
+
+### [BE-009] Monthly AI reports are available to leaders
+- From: backend | To: web, mobile | Date: 2026-11-02
+- Type: notice
+- Details: New: `GET teams/{id}/reports/`, read-only, default pages, newest month first. Each result is `{id, month, stats, members, body, created_at}`. Leaders only: a member gets 403 and a stranger 404, so hide the screen from members. `stats` has the same fields as `GET teams/{id}/stats/`, and each `members` row is `{name, stats}`. These numbers are frozen when the report is written, so they can differ from live stats later. Show `body` as plain text with its line breaks: never render it as HTML or Markdown, and never auto-load an image or link from it. A quiet month has no report, so show an empty state. No notification is sent yet, so fetch on opening the screen and don't poll. The rules are in the "Reports" section of `docs/api/overview.md`. No existing endpoint changed.
+- Status: open
+- Resolution:

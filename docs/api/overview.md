@@ -128,6 +128,19 @@ An AI assistant answers questions about the team's work, using only what the per
 - Rates are fractions from 0 to 1, and null when there's nothing to divide by. `completion_rate` can pass 1, because it compares tasks completed in the period with tasks due in it.
 - `overdue` is the count right now, whatever the period. Definitions are in `docs/glossary.md`.
 
+## Reports
+
+A monthly report sums up one team's month: numbers worked out by the server, and a short summary written by the AI.
+
+`GET teams/{id}/reports/`
+
+- Leaders only, because a report rates every member. A member gets 403, and a stranger 404. Hide the screen from members.
+- Default pages, newest month first. `month` is the first day of the month, in the team's timezone.
+- `stats` and `members` hold the same numbers as `GET teams/{id}/stats/` for that month, but frozen when the report was written. So they can differ from live stats later, and that's correct. `overdue` is the count on the day of writing. A member row has `name` in place of `user`, and someone who had left the team by then has no row.
+- Show `body` as plain text with its line breaks. Never render it as HTML or Markdown, and never load an image or open a link from it automatically, because it can repeat text other people wrote. It normally has the headings Summary, Achievements, Risks and Next month, but the AI writes them, so don't parse it.
+- Clients can't create, change or delete a report. The server writes one after each month ends, for now when an operator runs it and from Phase 8 on a schedule. A month with no activity gets none, so show an empty state.
+- A new report sends no notification yet. Fetch the list when the screen opens, and never poll it.
+
 ## Health
 
 These sit outside `/api/v1/`, have no trailing slash and need no token.

@@ -5,11 +5,20 @@ from django.db.models import ProtectedError
 
 from apps.chat.models import Message
 from apps.notifications.models import DeviceToken, Notification
+from apps.reports.models import MonthlyReport
 from apps.tasks.models import Comment, Task
 from apps.teams.models import TeamMembership
-from tests.factories import TaskFactory, TeamFactory, UserFactory
+from tests.factories import ReportFactory, TaskFactory, TeamFactory, UserFactory
 
 pytestmark = pytest.mark.django_db
+
+
+def test_a_teams_reports_go_with_it():
+    report = ReportFactory()
+
+    report.team.delete()
+
+    assert not MonthlyReport.objects.exists()
 
 
 @pytest.mark.parametrize("field", ["assignee", "created_by"])

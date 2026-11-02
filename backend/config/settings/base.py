@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "apps.notifications",
     "apps.ai",
     "apps.assistant",
+    "apps.reports",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
