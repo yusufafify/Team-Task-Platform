@@ -37,7 +37,7 @@ How the LLM is reached. Built from the roadmap line, with no detailed phase prom
 ## Open
 
 - Real free-tier numbers sit behind AI Studio sign-in, so the limit defaults are guesses. The app's limits are a first fence, and Gemini's 429 is the second.
-- Free-tier terms: Google may use prompts and replies to improve its products, and human reviewers may read them. The terms say not to send sensitive, confidential or personal information. Phase 4 sends team data, so the user must decide before then: seed data only, or a paid project.
+- Free-tier terms: Google may use prompts and replies to improve its products, and human reviewers may read them. The terms say not to send sensitive, confidential or personal information. Decided by the user on 2026-11-02: the chatbot sends only seeded data, so this stays settled and needs no further choice.
 - The terms allow only paid services for clients offered to users in the EEA, Switzerland or the UK.
 - Limits are per Google project, so another app on the same project shares the quota and this count can't see it.
 - Embeddings aren't built. Phase 5 adds them through the same reserve, send and log path, and they have their own quota, so counts will need to filter by `model`.

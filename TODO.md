@@ -11,7 +11,9 @@ What's left to do. For what exists today, see [README.md](README.md). Per-agent 
 - [x] Phase 1: models, migrations and admin, including team membership and Expo device tokens, plus CI running tests and ruff
 - [x] Phase 2: auth, roles, scoping, team management, core task, comment, chat and notification endpoints, stats, JSON-only responses in prod, throttled login, pagination, health checks
 - [ ] Clear the GitHub billing lock and run the Backend workflow, which has never run
-- [ ] Phase 3: AI provider layer, rate limiting and call logging
+- [x] Phase 3: AI provider layer, rate limiting and call logging
+- [x] Set the `AI_REQUESTS_*` limits in `backend/.env`
+- [x] Decide what data the chatbot sends to Gemini: seeded data only
 - [ ] Phase 4: chatbot: snapshot, tools and answer cache
 - [ ] Phase 5: RAG with pgvector
 - [ ] Phase 6: monthly AI reports
@@ -21,7 +23,9 @@ What's left to do. For what exists today, see [README.md](README.md). Per-agent 
 ## Backend hardening
 
 - [x] Separate `/healthz` and `/readyz`, with `/healthz` not touching the database
-- [ ] Correlation IDs on every request and log line
+- [x] Correlation IDs on every request and log line
+- [x] Stable error codes through one global exception handler
+- [x] A test that requires a login on every route not listed as public
 - [ ] Rollback steps and a smoke-check list in the deploy instructions
 - [ ] Dependency vulnerability scan in CI
 - [ ] Remove the generated boilerplate docstrings in `backend/config/`

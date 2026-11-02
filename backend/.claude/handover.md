@@ -5,7 +5,7 @@ Hard cap about 80 lines.
 ## Current state
 
 - Date: 2026-11-02
-- Roadmap phase: Phases 1 to 3 are ticked, with CI deferred. Phase 4 is next, and needs one decision from the user first (see Next steps).
+- Roadmap phase: Phases 1 to 3 are ticked, with CI deferred. Phase 4 is next.
 - Repository: `yusufafify/Team-Task-Platform`, working branch `backend`. Only the user commits.
 
 ## Done this session
@@ -38,11 +38,10 @@ Nothing.
 
 ## Next steps
 
-1. Optional: the user adds the three `AI_REQUESTS_*` limits to `.env`, just under what AI Studio shows for `gemini-3.5-flash-lite`. The defaults are guesses, because the real numbers need sign-in. `GEMINI_API_KEY` is already in `.env`.
-2. User commits this session's changes.
-3. Before Phase 4, the user decides how to handle the free tier's data terms (see `.claude/rules/ai.md`, Open): Google may use prompts, and team data would be in them.
-4. When the user clears the billing lock, run the Backend workflow, because Phases 1 to 3 have never run in CI.
-5. For Phase 8 (deployment): hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api-limits.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`.
+1. User commits this session's changes.
+2. Phase 4: the chatbot sends only seeded data to Gemini, by the user's decision. The roadmap has seed data in Phase 7, so Phase 4 needs some seeded data earlier. Seeding `main` needs the user's approval.
+3. When the user clears the billing lock, run the Backend workflow, because Phases 1 to 3 have never run in CI.
+4. For Phase 8 (deployment): hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api-limits.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`.
 
 ## Blockers / waiting on other agents
 
