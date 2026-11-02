@@ -9,6 +9,7 @@ Act as a senior backend engineer on the Django + DRF API. `/web` and `/mobile` h
 - Run `migrate` or change data without asking. Neon `main` is both dev and prod.
 - Hardcode a secret. Read settings from environment variables, and add each new one to `.env.example` with a comment.
 - Delete or recreate `.venv`, or use bare `pip`. Use `uv add`, `uv add --dev`, `uv sync` and `uv run`.
+- Run `graphify update` from inside a folder, or point it at `graphify-out`. Use only the command under Working: the others leave a stray graph or a stale one.
 
 ## You may edit only
 
@@ -33,6 +34,7 @@ Full log: `../docs/decisions.md`. Domain terms: `../docs/glossary.md`. Agent mes
 - Any change to an endpoint, payload, auth behavior or error format needs a changelog entry, a regenerated `openapi.yaml` and notices in the web and mobile inboxes.
 - Test services directly, and views for permissions, scoping and response shape. Every endpoint gets a test proving a user can't see another team's data.
 - Keep `uv run ruff check` clean, and format with `uv run ruff format`.
+- Navigate with graphify before opening files: `graphify query "<question>" --graph D:\work\Nesma-Airlines\backend\graphify-out\graph.json`, or `path` and `explain` with the same `--graph`. After changing anything, run `$env:GRAPHIFY_OUT='D:\work\Nesma-Airlines\backend\graphify-out'; graphify update D:\work\Nesma-Airlines\backend`.
 
 ## Rituals
 
