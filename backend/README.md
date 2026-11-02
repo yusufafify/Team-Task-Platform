@@ -125,6 +125,14 @@ uv run --no-sync daphne -b 0.0.0.0 -p $PORT config.asgi:application
 
 Most hosts provide `$PORT`. Run exactly one server process, because the live socket's channels live in that process's memory. A second one would miss events sent through the first. `runserver` uses the same server locally.
 
+### More than one server process
+
+One process is the limit only because of that in-memory layer. To go past it:
+
+1. Point `CHANNEL_LAYERS` at a shared layer. `channels_redis` is the standard one, so this is when to lift the no-Redis rule (D-002). `push()` is the only thing that sends to sockets, so no other code changes.
+2. Run several Daphne processes behind a load balancer. It needs no sticky sessions, because sockets keep their state in the shared layer and the database.
+3. Run the scheduler as its own `manage.py run_scheduler` process instead of inside the server.
+
 ### HTTPS
 
 Prod redirects all HTTP traffic to HTTPS. The host must handle HTTPS in front of the app and overwrite the `X-Forwarded-Proto` header. Check this when choosing a host, because `prod.py` trusts that header.

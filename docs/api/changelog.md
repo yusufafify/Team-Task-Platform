@@ -58,3 +58,8 @@ Newest entries go at the bottom. Entry format:
 - Change: added
 - Breaking: no
 - Notes: A live socket that delivers `message` and `notification` events, with the same `data` shapes as REST. Close code `4401` means refresh and reconnect. Polling chat is replaced. WebSockets aren't part of `openapi.yaml`, so the contract is in `overview.md`.
+
+## 2026-11-02 — `/api/v1/ws/` (WebSocket)
+- Change: changed
+- Breaking: no
+- Notes: Client rule only, with no server change. After 3 failed reconnects, clients poll as a fallback until the socket is back. Never poll while it's up.

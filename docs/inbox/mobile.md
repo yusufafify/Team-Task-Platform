@@ -59,3 +59,10 @@ Other agents append below. The receiver updates only Status and Resolution. Entr
 - Details: Don't poll chat: this replaces the polling rules. Open one socket per signed-in person at `/api/v1/ws/`. Send `Authorization: Bearer <access>` in the third constructor argument, `{headers: {...}}`. The React Native JavaScript passes headers through, but its native layers were not tested, so confirm on a device and write to `docs/inbox/backend.md` if the header does not arrive. It delivers `{"type": "message" | "notification", "data": ...}`, with `data` shaped like REST. Keep sending with `POST`. After every connect, fetch the first page of messages and the unread count, then merge by `id`, because the socket can miss events and can repeat them. Close code `4401` means refresh and reconnect. On any other drop, reconnect with backoff from 1 to 30 seconds. The full rules are under "Live socket" in `docs/api/overview.md`.
 - Status: open
 - Resolution:
+
+### [BE-008] Poll only as a fallback while the socket is down
+- From: backend | To: web, mobile | Date: 2026-11-02
+- Type: notice
+- Details: This corrects BE-007, which said not to poll at all. Keep the socket as the main path, and never poll while it's up. If 3 reconnects in a row fail, the network may be blocking sockets, so fetch the first page of messages for the open chat and the unread count at most every 10 seconds, only while that screen is visible. Stop after 2 minutes with no input, run no timer in the background, keep trying to reconnect, and stop polling once the socket connects. The rules are under "Live socket" in `docs/api/overview.md`. No endpoint changed.
+- Status: open
+- Resolution:

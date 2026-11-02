@@ -13,12 +13,13 @@ What's left to do. For what exists today, see [README.md](README.md). Per-agent 
 - [ ] Clear the GitHub billing lock and run the Backend workflow, which has never run
 - [x] Phase 3: AI provider layer, rate limiting and call logging
 - [x] Set the `AI_REQUESTS_*` limits in `backend/.env`
-- [x] Decide what data the chatbot sends to Gemini: seeded data only
-- [ ] Phase 4: chatbot: snapshot, tools and answer cache
+- [x] Decide what data the chatbot sends to Gemini: the signed-in user's actual data. Seeded data is only test data
+- [x] Phase 4: chatbot: snapshot, tools and answer cache
+- [x] Live socket for chat and notifications, with polling only as a fallback
 - [ ] Phase 5: RAG with pgvector
 - [ ] Phase 6: monthly AI reports
 - [ ] Phase 7: seed data and final coverage
-- [ ] Phase 8: deployment and event pipeline: email via Resend, Expo push, scheduled jobs and the `run_scheduler` process
+- [ ] Phase 8: deployment and event pipeline: email via Resend, Expo push, and scheduled jobs running inside the server process (D-016)
 
 ## Backend hardening
 

@@ -25,6 +25,7 @@ Hard cap about 80 lines.
 - Added `seed_demo` and `SEED_USER_PASSWORD`.
 - Corrected a misreading: "seeded data only" was never a restriction. See `.claude/rules/ai.md`.
 - At the user's request, added a push-only WebSocket at `/api/v1/ws/` for chat and notifications, replacing polling. Channels and Daphne, one process, in-memory layer, no Redis. Published as BE-007. Prod's start command is now Daphne, and `CONN_MAX_AGE` is 0. Decisions are in `.claude/rules/api.md`, limits in `api-limits.md`.
+- The user left the next calls to the agent: polling only as a fallback (BE-008), the scheduler inside the server for now, and no Redis until there's more than one process. Scaling steps are in `README.md`. At the user's request, D-016 went into `docs/decisions.md` and `TODO.md` was updated.
 - With the user's approval: `migrate assistant` and `seed_demo` ran on `main`, and 15 Gemini requests were spent. `main` now has 5 users, the Demo Team of 4, 10 tasks, 3 comments and 3 messages. Both test threads were cleared.
 
 ## Verification
@@ -33,7 +34,7 @@ Hard cap about 80 lines.
 - 20 of 20 deliberate breaks were caught, each removing one safeguard, including role scoping, thread privacy and each cache rule. One break first produced invalid Python and was redone. The django-reviewer pass found one defect, now fixed: `get_task` cut the description it promised in full.
 - Live, on `runserver` with real JWTs and real Gemini, as a leader and a member, 15 requests, all `succeeded`: snapshot answers, the cache spending no request, tools, history replay without thought steps, `tool_choice: "none"` after function steps, `is_error`, 401 with no token, and `DELETE`. Answers were read by hand and match the seeded data. A member got none of a teammate's work, even when told to ignore its instructions.
 - That run found a real bug the check first passed: the prompt made the model refuse the asker's own request. Fixed and retested live. The member and injection questions ran on the old wording, but their limits are enforced in Python.
-- Socket: the full suite ran 462 passed after the last code change, and ruff, migrations and the schema check are clean. 12 of 12 deliberate breaks were caught.
+- Socket: the full suite ran 463 passed after the last change, and ruff, migrations and the schema check are clean. 13 of 13 deliberate breaks were caught.
 - Socket, on real Daphne with real `websockets` clients and a throwaway SQLite file, so `main` wasn't touched: a real cookie login connected, and a message arrived in 297 ms with the same shape as REST. A stranger heard nothing, a removed member stopped hearing on an open socket, and a login cookie from another origin was refused.
 - Not tested: text planted in a comment against the live model, `check --deploy`, a real browser or phone on the socket, Daphne on Linux, and sockets on Neon rather than SQLite, apart from the test suite.
 
@@ -56,7 +57,7 @@ Nothing.
 2. Phase 5: RAG. The user wants it to work from the signed-in user's actual data, like the chatbot. The tool loop and scoping are ready to reuse. Set `SEED_USER_PASSWORD` in `.env` and rerun `seed_demo` before anyone logs in as a demo account.
 3. When the user clears the billing lock, run the Backend workflow, because Phases 1 to 3 have never run in CI.
 4. Mobile must confirm on a device that `Authorization` reaches the socket. The React Native JavaScript passes headers through, but its native layers weren't checked. `gunicorn` is unused now, so remove it when the host is chosen.
-5. For Phase 8 (deployment): the user must decide how scheduled notifications reach sockets (see `.claude/rules/scheduling.md`). The host must run one always-on Daphne process, and its `/api/*` proxy must forward WebSocket upgrades. Hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api-limits.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`.
+5. For Phase 8 (deployment): start the scheduler inside the Daphne process, as `.claude/rules/scheduling.md` decides. The host must run one always-on Daphne process, and its `/api/*` proxy must forward WebSocket upgrades, or web runs on the polling fallback until a ticket endpoint exists. Hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api-limits.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`.
 
 ## Blockers / waiting on other agents
 

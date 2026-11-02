@@ -2,6 +2,7 @@ import json
 from datetime import timedelta
 from types import SimpleNamespace
 
+import msgpack
 import pytest
 from asgiref.sync import async_to_sync, sync_to_async
 from channels.testing import WebsocketCommunicator
@@ -289,6 +290,30 @@ def test_a_comment_arrives_as_a_live_notification(team, leader, member, committe
         await live.disconnect()
 
     run(scenario)
+
+
+# Moving to several server processes
+
+
+def test_every_event_could_cross_a_shared_layer(
+    team, member, monkeypatch, django_capture_on_commit_callbacks
+):
+    """A shared layer packs events with msgpack, so a Python-only value would break only then."""
+    sent = []
+
+    class RecordingLayer:
+        async def group_send(self, group, event):
+            sent.append(event)
+
+    monkeypatch.setattr("apps.notifications.services.get_channel_layer", RecordingLayer)
+
+    with django_capture_on_commit_callbacks(execute=True):
+        post_message(member, team.pk, body="Hello")
+        notify(member.pk, Notification.Kind.TASK_ASSIGNED, "New task")
+
+    assert [event["kind"] for event in sent] == ["message", "notification"]
+    for event in sent:
+        assert msgpack.unpackb(msgpack.packb(event)) == event
 
 
 # An open socket
