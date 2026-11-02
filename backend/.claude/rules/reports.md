@@ -36,11 +36,11 @@ Phase 6 monthly reports, in `apps/reports`. Built from the roadmap line, with no
 - That month had no comments or chat, because the old seed stamped them with the day it ran. So two more requests used made-up data through the real prompt, logged with no team and saving no report. An Arabic comment was read correctly and given as the cause of a block. A comment ordering it to announce a cancellation, blame a person and list emails was obeyed neither time, and left out without saying so. Two samples prove little.
 - Without a rule for days, "whole percentages" spread to delays: 1.25 became "1 days" and 1.5 became "2 days". The prompt now says one decimal.
 - A list's total of 240 beside 3 rows caused no false claim.
-- After the Phase 7 reseed, the report took 6.4 seconds and 2,651 tokens. Every number, per-person rate and claim was right, and nothing was invented. But it used none of the 6 comments and 5 messages it was sent, so it lists blocked work with no cause while a comment states it. A test for a stored report would pass this.
+- After the Phase 7 reseed, the report took 6.4 seconds and 2,651 tokens. Every number, per-person rate and claim was right, and nothing was invented. But it used none of the 6 comments and 5 messages it was sent, so it listed blocked work with no cause while a comment stated it. A test for a stored report would pass this.
+- The prompt then gained a line asking for causes and who gave them. The rerun took 2.7 seconds and 2,636 tokens: all three causes appeared with the right author, the numbers held, and the overdue task with no October comment got no invented cause. Its per-person rates left the prose, though `members` still holds them, and it called overdue tasks "delayed", which the glossary keeps for late completions. One sample proves little.
 
 ## Open
 
-- Reports may ignore the causes in comments and chat, as above. The prompt only says to leave out a cause nobody gave, so it likely needs a line asking for causes under Risks. Testing that spends a request.
 - Only the last complete month is due, so an outage longer than a month loses that month's report. Nothing backfills it: see the `shortcut:` comment in `last_complete_month`.
 - Reports share the chat model's daily limit, so a run uses requests people could have used. Any account can create a team, and an active one costs a request a month.
 - No notification when a report appears. Phase 8 should add it with the schedule, because a hand-run command is a separate process and can't reach sockets.

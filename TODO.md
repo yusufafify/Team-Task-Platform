@@ -19,8 +19,10 @@ What's left to do. For what exists today, see [README.md](README.md). Per-agent 
 - [x] Phase 5: RAG with pgvector
 - [x] Set the `AI_EMBEDDING_*` limits in `backend/.env`
 - [x] Decide what team text may go to Google: fine on free-tier terms while this is a take-home project. Revisit before real teams use it
-- [ ] Phase 6: monthly AI reports
-- [ ] Phase 7: seed data and final coverage
+- [x] Phase 6: monthly AI reports
+- [x] Phase 7: seed data and final coverage
+- [x] Make monthly reports use the causes in comments and chat
+- [x] Add the demo password to `backend/.env` as `SEED_USER_PASSWORD`, or the next `seed_demo` run disables the demo logins
 - [ ] Phase 8: deployment and event pipeline: email via Resend, Expo push, and scheduled jobs running inside the server process (D-016)
 
 ## Backend hardening

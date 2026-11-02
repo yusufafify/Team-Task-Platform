@@ -26,7 +26,7 @@ Hard cap about 80 lines.
 - 12 of 12 deliberate breaks caught, each removing one safeguard. Files restored and checked afterwards.
 - Seed dates are tested on 5 awkward dates, including just after February and across a year.
 - October's new report was read by hand against `main`: every number, per-person rate and claim was right, and nothing was invented.
-- That report's flaw: it was sent 6 comments and 5 messages and used none, so blocked work has no cause beside it. Prompt left alone: see "Open" in `.claude/rules/reports.md`.
+- That report used none of its 6 comments and 5 messages, so the prompt now asks for causes and who gave them. With the user's approval, October's report was deleted and rewritten on `main` for 1 more Gemini request. All three causes appeared with the right author: see "Checked live" in `.claude/rules/reports.md`. Only the report tests were rerun after this change: 47 passed.
 - 13 of the 29 tasks, comments and messages on `main` have no `Embedding` row yet. They embed on the next search, in one request.
 
 ## Phase 6 results, still true
@@ -46,7 +46,7 @@ Nothing.
 
 ## Next steps
 
-1. The four demo accounts still can't log in: the seed saw no `SEED_USER_PASSWORD`, confirmed by `has_usable_password()` on `main`. The user sets it in `.env`, then `seed_demo` reruns. That spends nothing and leaves the report alone.
+1. The four demo accounts log in, tested with `authenticate` on `main`. Agents can't edit `.env`, so `seed_demo` got a generated password as a variable for that one run. The user holds it and must add it to `.env` as `SEED_USER_PASSWORD`, or the next `seed_demo` run disables the logins.
 2. When the user clears the billing lock, run the Backend workflow, because Phases 1 to 3 have never run in CI.
 3. Mobile must confirm on a device that `Authorization` reaches the socket. The React Native JavaScript passes headers through, but its native layers weren't checked. `gunicorn` is unused now, so remove it when the host is chosen.
 4. For Phase 8 (deployment): start the scheduler inside the Daphne process, as `.claude/rules/scheduling.md` decides, and add `generate_reports` to it, with a notification to leaders. The host must run one always-on Daphne process, and its `/api/*` proxy must forward WebSocket upgrades, or web runs on the polling fallback until a ticket endpoint exists. Hosting must be free: the web host proxies `/api/*` to the API (see `.claude/rules/api-limits.md`). Set `DJANGO_NUM_PROXIES` counting that proxy, check `SECURE_PROXY_SSL_HEADER`, use `/healthz` for frequent probes, and schedule `flushexpiredtokens`. Run `embed_pending` once after the first deploy.
