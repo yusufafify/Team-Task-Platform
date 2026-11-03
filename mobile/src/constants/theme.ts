@@ -1,0 +1,150 @@
+// Nesma design tokens for React Native. Source of truth: .claude/skills/nesma-design/.
+// Values mirror web/src/styles.css so both apps look the same; change them together.
+import type { TextStyle } from 'react-native';
+
+export const Colors = {
+  light: {
+    background: '#ffffff',
+    foreground: '#1a1a1a',
+    card: '#ffffff',
+    popover: '#ffffff',
+    // Purple is for the one dominant action, never body text or large surfaces.
+    primary: '#5645d4',
+    primaryForeground: '#ffffff',
+    primaryPressed: '#4534b3',
+    secondary: '#f6f5f4',
+    muted: '#f6f5f4',
+    mutedForeground: '#5d5b54',
+    surfaceSoft: '#fafaf9',
+    charcoal: '#37352f',
+    steel: '#787671',
+    inverse: '#000000',
+    inverseForeground: '#ffffff',
+    // Links are blue and never share a role with the purple primary.
+    link: '#0075de',
+    linkPressed: '#005bab',
+    ring: '#5645d4',
+    border: '#e5e3df',
+    borderSoft: '#ede9e4',
+    borderStrong: '#c8c4be',
+    // Darker than the spec's hairline-strong so an input's edge reaches 3:1.
+    input: '#8f8c85',
+    destructive: '#c92a2a',
+    destructiveForeground: '#ffffff',
+    destructiveText: '#c92a2a',
+    success: '#12702a',
+    warning: '#b84a00',
+    tintPeach: '#ffe8d4',
+    tintRose: '#fde0ec',
+    tintMint: '#d9f3e1',
+    tintLavender: '#e6e0f5',
+    tintSky: '#dcecfa',
+    tintYellow: '#fef7d6',
+    tintYellowBold: '#f9e79f',
+    tintCream: '#f8f5e8',
+    tintGray: '#f0eeec',
+    onTint: '#37352f',
+    tagPurple: '#391c57',
+    tagOrange: '#793400',
+    tagGreen: '#12702a',
+    shadowSubtle: 'rgba(15, 15, 15, 0.04) 0px 1px 2px 0px',
+    shadowCard: 'rgba(15, 15, 15, 0.08) 0px 4px 12px 0px',
+    shadowModal: 'rgba(15, 15, 15, 0.16) 0px 16px 48px -8px',
+  },
+  // The spec has no dark tokens; these are web's derived warm neutrals, checked for contrast there.
+  dark: {
+    background: '#191919',
+    foreground: '#ebebea',
+    card: '#202020',
+    popover: '#252525',
+    primary: '#5645d4',
+    primaryForeground: '#ffffff',
+    primaryPressed: '#4534b3',
+    secondary: '#2c2c2b',
+    muted: '#2c2c2b',
+    mutedForeground: '#a4a097',
+    surfaceSoft: '#202020',
+    charcoal: '#d4d2cd',
+    steel: '#a4a097',
+    inverse: '#ebebea',
+    inverseForeground: '#191919',
+    link: '#66adf0',
+    linkPressed: '#8fc4f5',
+    ring: '#8d80f0',
+    border: '#37352f',
+    borderSoft: '#2c2b28',
+    borderStrong: '#5d5b54',
+    input: '#7c7a73',
+    destructive: '#c92a2a',
+    destructiveForeground: '#ffffff',
+    destructiveText: '#ff8787',
+    success: '#6fd68a',
+    warning: '#f6a463',
+    tintPeach: '#3a2a1e',
+    tintRose: '#3a2430',
+    tintMint: '#1f3327',
+    tintLavender: '#2b2640',
+    tintSky: '#1f2f3f',
+    tintYellow: '#38321c',
+    tintYellowBold: '#4a3f12',
+    tintCream: '#2f2c22',
+    tintGray: '#2c2c2b',
+    onTint: '#ebebea',
+    tagPurple: '#d6b6f6',
+    tagOrange: '#f6b48c',
+    tagGreen: '#8fe0a8',
+    shadowSubtle: 'rgba(0, 0, 0, 0.3) 0px 1px 2px 0px',
+    shadowCard: 'rgba(0, 0, 0, 0.35) 0px 4px 12px 0px',
+    shadowModal: 'rgba(0, 0, 0, 0.5) 0px 16px 48px -8px',
+  },
+} as const;
+
+export type Theme = { [K in keyof typeof Colors.light]: string };
+
+// Same in both themes: hero bands stay navy in dark mode too.
+export const Brand = {
+  navy: '#0a1530',
+  navyDeep: '#070f24',
+  navyMid: '#1a2a52',
+  onDark: '#ffffff',
+  onDarkMuted: '#a4a097',
+} as const;
+
+// Buttons and inputs md, cards lg, full for badges and pill tabs only.
+export const Radius = { xs: 4, sm: 6, md: 8, lg: 12, xl: 16, xxl: 20, xxxl: 24, full: 9999 } as const;
+
+export const Spacing = {
+  xxs: 4,
+  xs: 8,
+  sm: 12,
+  md: 16,
+  lg: 20,
+  xl: 24,
+  xxl: 32,
+  xxxl: 40,
+  sectionSm: 48,
+  section: 64,
+} as const;
+
+// Web's scale minus the marketing display sizes. RN line heights are pixels, not multipliers.
+export const Type = {
+  heading1: { fontSize: 48, lineHeight: 55, letterSpacing: -0.5, fontWeight: 600 },
+  heading2: { fontSize: 36, lineHeight: 43, letterSpacing: -0.5, fontWeight: 600 },
+  heading3: { fontSize: 28, lineHeight: 35, fontWeight: 600 },
+  heading4: { fontSize: 22, lineHeight: 29, fontWeight: 600 },
+  heading5: { fontSize: 18, lineHeight: 25, fontWeight: 600 },
+  subtitle: { fontSize: 18, lineHeight: 27 },
+  bodyMd: { fontSize: 16, lineHeight: 25 },
+  bodySm: { fontSize: 14, lineHeight: 21 },
+  caption: { fontSize: 13, lineHeight: 18 },
+  captionBold: { fontSize: 13, lineHeight: 18, fontWeight: 600 },
+  micro: { fontSize: 12, lineHeight: 17, fontWeight: 500 },
+  microUppercase: {
+    fontSize: 11,
+    lineHeight: 15,
+    letterSpacing: 1,
+    fontWeight: 600,
+    textTransform: 'uppercase',
+  },
+  button: { fontSize: 14, lineHeight: 18, fontWeight: 500 },
+} as const satisfies Record<string, TextStyle>;

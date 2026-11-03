@@ -27,4 +27,6 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started. Each agent edits only i
 
 ## Mobile
 
-- ⬜ Setup
+- ✅ Setup: Expo SDK 58 with Expo Router and TypeScript, Nesma tokens ported from web, TanStack Query provider, agent files (`CLAUDE.md`, path-scoped rules, 25 skills from web). `tsc`, lint, `expo-doctor` and an Android bundle pass; not yet run on a device
+- ⬜ HTTP facade and auth against `auth/mobile/*`
+- Last inbox ID processed: none (BE-001 to BE-010 still open)
