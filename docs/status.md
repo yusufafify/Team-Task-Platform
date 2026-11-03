@@ -27,4 +27,8 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started. Each agent edits only i
 
 ## Mobile
 
-- ⬜ Setup
+- ✅ Setup: Expo SDK 58 with Expo Router and TypeScript, Nesma tokens ported from web, TanStack Query provider, agent files (`CLAUDE.md`, path-scoped rules, 25 skills from web). `tsc`, lint, `expo-doctor` and an Android bundle pass; not yet run on a device
+- ✅ HTTP facade and auth against `auth/mobile/*`: tokens in `expo-secure-store`, single-flight rotating refresh, sign out and sign out everywhere
+- ✅ Features: teams, members and settings; tasks with filters, detail, status, comments, create, edit and delete; chat; live socket with fallback polling; notifications with tab badge; assistant; stats; reports for leaders; account; Expo push registration and tap routing
+- 🔄 Checks: `tsc` with typed routes, lint, `expo-doctor` and an Android bundle pass, and the live API answered anonymous auth calls with the codes the app branches on. Still to do: run on a device signed in against the real API, confirm the socket's Bearer header arrives (BE-007), and get a push, which needs `eas init` for a project ID and a development build
+- Last inbox ID processed: BE-010

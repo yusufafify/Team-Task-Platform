@@ -1,0 +1,10 @@
+# Installed skills, agent notes, generated and native output aren't app code.
+.claude/
+node_modules/
+.expo/
+assets/
+ios/
+android/
+graphify-out/
+package-lock.json
+AGENTS.md
