@@ -2,6 +2,10 @@
 @import 'tw-animate-css';
 @import '@fontsource-variable/inter';
 
+/* Hosts that build without .gitignore would scan dist/, so the SSR build hashes
+   different CSS than the client build and the shell links a file that doesn't exist. */
+@source not '../dist';
+
 /* Theme-independent tokens. Source of truth: .claude/skills/nesma-design/ */
 @theme {
   /* Notion Sans is proprietary, so Inter Variable stands in, per the spec's fallback stack. */
