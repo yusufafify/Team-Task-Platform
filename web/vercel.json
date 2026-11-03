@@ -2,5 +2,11 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
   "outputDirectory": "dist/client",
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/_shell.html" }]
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://nesma-airlines-api.onrender.com/api/$1"
+    },
+    { "source": "/((?!api/).*)", "destination": "/_shell.html" }
+  ]
 }
