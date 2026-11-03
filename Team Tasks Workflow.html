@@ -1,0 +1,767 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Team Tasks Workflow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column for prose; each diagram sits on its own wide sheet with a short fact list under it. */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --ink: #18202c;
+  --ink-2: #3c4756;
+  --muted: #5c6777;
+  --rule: #d5dbe4;
+  --lane: #edf0f5;
+  --api: #2b59c3;   --api-soft: #e4ebfa;
+  --ai: #0b7a6f;    --ai-soft: #dbf1ed;
+  --sched: #a15d06; --sched-soft: #fbeddb;
+  --note: #c0336a;  --note-soft: #fbe3ec;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "IBM Plex Sans Condensed", "IBM Plex Sans", "Arial Narrow", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f131a; --surface: #161b24; --ink: #e3e8f0; --ink-2: #aab4c3; --muted: #919cad;
+    --rule: #2a313d; --lane: #1b212c;
+    --api: #86a9f7; --api-soft: #1a2640;
+    --ai: #55c9bb; --ai-soft: #0f2f2b;
+    --sched: #e7a752; --sched-soft: #33260f;
+    --note: #f27ca4; --note-soft: #3b1726;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f131a; --surface: #161b24; --ink: #e3e8f0; --ink-2: #aab4c3; --muted: #919cad;
+  --rule: #2a313d; --lane: #1b212c;
+  --api: #86a9f7; --api-soft: #1a2640;
+  --ai: #55c9bb; --ai-soft: #0f2f2b;
+  --sched: #e7a752; --sched-soft: #33260f;
+  --note: #f27ca4; --note-soft: #3b1726;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 15px/1.6 var(--sans);
+}
+.wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 64px;
+  display: grid;
+  gap: 56px;
+}
+a { color: var(--api); text-underline-offset: 2px; }
+a:focus-visible, .fig-scroll:focus-visible { outline: 2px solid var(--api); outline-offset: 3px; border-radius: 4px; }
+code { font-family: var(--mono); font-size: 0.86em; color: var(--ink-2); }
+
+header { display: grid; gap: 18px; }
+.eyebrow {
+  font: 500 12px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+h1 {
+  font: 700 clamp(2.1rem, 4.6vw, 3.4rem)/1.05 var(--display);
+  letter-spacing: -0.01em;
+  margin: 0;
+  text-wrap: balance;
+}
+.lede { max-width: 66ch; margin: 0; color: var(--ink-2); font-size: 16px; }
+.toc { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; }
+.toc a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--rule); padding-bottom: 2px; }
+.toc a:hover { color: var(--api); border-color: var(--api); }
+
+.legend {
+  list-style: none; margin: 0; padding: 14px 16px;
+  display: flex; flex-wrap: wrap; gap: 10px 22px;
+  border: 1px solid var(--rule); border-radius: 10px; background: var(--surface);
+  font-size: 13px; color: var(--ink-2);
+}
+.legend li { display: flex; align-items: center; gap: 8px; }
+.sw { width: 22px; height: 14px; border-radius: 3px; border: 1.2px solid; flex: none; }
+.sw-person { background: var(--surface); border-color: var(--ink-2); }
+.sw-api { background: var(--api-soft); border-color: var(--api); }
+.sw-ai { background: var(--ai-soft); border-color: var(--ai); }
+.sw-sched { background: var(--sched-soft); border-color: var(--sched); }
+.sw-ext { background: var(--surface); border-color: var(--ink-2); border-style: dashed; }
+.lg { width: 34px; height: 12px; flex: none; overflow: visible; }
+.lg .l1 { stroke: var(--ink-2); stroke-width: 1.4; }
+.lg .l2 { stroke: var(--note); stroke-width: 1.4; stroke-dasharray: 5 4; }
+.lg .l3 { stroke: var(--sched); stroke-width: 1.4; stroke-dasharray: 5 4; }
+.lg .h1 { fill: var(--ink-2); } .lg .h2 { fill: var(--note); } .lg .h3 { fill: var(--sched); }
+
+section { display: grid; gap: 16px; scroll-margin-top: 24px; }
+.sec-head { display: grid; gap: 6px; max-width: 70ch; }
+h2 {
+  font: 700 clamp(1.45rem, 2.6vw, 1.9rem)/1.15 var(--display);
+  margin: 0; text-wrap: balance;
+}
+.sec-head p { margin: 0; color: var(--ink-2); }
+.kicker { font: 500 11.5px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+figure { margin: 0; display: grid; gap: 10px; }
+.fig-scroll {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 18px;
+}
+figcaption { font-size: 13.5px; color: var(--muted); max-width: 80ch; }
+.hint { display: none; font: 500 11.5px var(--mono); color: var(--muted); }
+@media (max-width: 760px) { .hint { display: block; } .fig-scroll { padding: 12px; } }
+
+.facts {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px 28px;
+  font-size: 14px; color: var(--ink-2);
+}
+.facts li { min-width: 0; padding-left: 14px; border-left: 2px solid var(--rule); }
+.facts .src { display: block; font: 400 11.5px/1.5 var(--mono); color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
+
+footer { border-top: 1px solid var(--rule); padding-top: 20px; display: grid; gap: 8px; font-size: 13px; color: var(--muted); }
+footer h2 { font-size: 1rem; }
+footer ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 18px; font-family: var(--mono); font-size: 12px; }
+
+/* Diagram styling. Every color comes from the tokens above. */
+.dg { display: block; width: 100%; height: auto; font-family: var(--sans); }
+.dg .lane-a { fill: var(--lane); }
+.dg .sep { stroke: var(--rule); stroke-width: 1; }
+.dg .div { stroke: var(--rule); stroke-width: 1; stroke-dasharray: 3 4; }
+.dg .b-person, .dg .b-api, .dg .b-ai, .dg .b-sched, .dg .b-ext, .dg .b-skip { stroke-width: 1.2; }
+.dg .b-person { fill: var(--surface); stroke: var(--ink-2); }
+.dg .b-api { fill: var(--api-soft); stroke: var(--api); }
+.dg .b-ai { fill: var(--ai-soft); stroke: var(--ai); }
+.dg .b-sched { fill: var(--sched-soft); stroke: var(--sched); }
+.dg .b-ext { fill: var(--surface); stroke: var(--ink-2); stroke-dasharray: 4 3; }
+.dg .b-skip { fill: var(--lane); stroke: var(--muted); stroke-dasharray: 4 3; }
+.dg .p-note { fill: var(--note-soft); stroke: var(--note); stroke-width: 1.2; }
+.dg .p-err { fill: var(--surface); stroke: var(--muted); stroke-width: 1.1; stroke-dasharray: 3 3; }
+.dg .ln { fill: none; stroke: var(--ink-2); stroke-width: 1.3; }
+.dg .ln-note { fill: none; stroke: var(--note); stroke-width: 1.3; stroke-dasharray: 5 4; }
+.dg .ln-retry { fill: none; stroke: var(--sched); stroke-width: 1.3; stroke-dasharray: 5 4; }
+.dg .mk { fill: var(--ink-2); }
+.dg .mk-note { fill: var(--note); }
+.dg .mk-retry { fill: var(--sched); }
+.dg .axis { stroke: var(--ink-2); stroke-width: 1.3; }
+.dg .guide { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 2 3; }
+.dg .track { stroke: var(--rule); stroke-width: 1; }
+.dg .band-sched { fill: var(--sched-soft); }
+.dg .band-note { fill: var(--note-soft); }
+.dg .dot-sched { fill: var(--sched); }
+.dg .dot-day { fill: var(--sched); stroke: var(--surface); stroke-width: 2; }
+.dg .dot-ink { fill: var(--ink-2); }
+.dg text { fill: var(--ink); }
+.dg .tt { font: 600 12.5px var(--sans); text-anchor: middle; }
+.dg .ts { font: 400 10.5px var(--sans); fill: var(--muted); text-anchor: middle; }
+.dg .tc { font: 400 10px var(--mono); fill: var(--muted); text-anchor: middle; }
+.dg .tl { font: 500 10px var(--mono); fill: var(--muted); }
+.dg .tn { font: 400 11px var(--sans); fill: var(--muted); }
+.dg .tp { font: 500 10px var(--mono); fill: var(--note); text-anchor: middle; }
+.dg .te { font: 500 10px var(--mono); fill: var(--muted); text-anchor: middle; }
+.dg .tstate { font: 600 12px var(--mono); text-anchor: middle; }
+.dg .tq { font: 600 11.5px var(--sans); text-anchor: middle; }
+.dg .tlane { font: 600 12.5px var(--sans); }
+.dg .tlane-sub { font: 400 10.5px var(--sans); fill: var(--muted); }
+.dg .tphase { font: 600 10.5px var(--mono); fill: var(--muted); letter-spacing: 0.06em; text-anchor: middle; }
+.dg .tjob { font: 500 11px var(--mono); }
+.dg .c-api { fill: var(--api); }
+.dg .c-ai { fill: var(--ai); }
+.dg .c-sched { fill: var(--sched); }
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Team Task Platform · backend workflows</p>
+  <h1>Team Tasks Workflow</h1>
+  <p class="lede">How work moves through the platform. A leader assigns a task, the assignee works it, the server tells the right people, an hourly scheduler sends reminders, and Gemini answers questions and writes monthly reports. Each diagram is drawn from the backend code on the <code>mobile</code> branch at <code>908fae1</code>.</p>
+  <nav class="toc" aria-label="Diagrams">
+    <a href="#loop">The whole loop</a>
+    <a href="#status">Task status</a>
+    <a href="#reminders">Due dates and reminders</a>
+    <a href="#delivery">Notification delivery</a>
+    <a href="#scheduler">Scheduler</a>
+    <a href="#assistant">Assistant</a>
+    <a href="#reports">Monthly reports</a>
+  </nav>
+  <ul class="legend" aria-label="Legend">
+    <li><span class="sw sw-person"></span>Person, in the web or mobile app</li>
+    <li><span class="sw sw-api"></span>API service</li>
+    <li><span class="sw sw-ai"></span>Gemini</li>
+    <li><span class="sw sw-sched"></span>Scheduled job</li>
+    <li><span class="sw sw-ext"></span>Outside provider</li>
+    <li><svg class="lg" viewBox="0 0 34 12" aria-hidden="true"><line class="l1" x1="1" y1="6" x2="27" y2="6"/><path class="h1" d="M26 2l7 4-7 4z"/></svg>Request or call</li>
+    <li><svg class="lg" viewBox="0 0 34 12" aria-hidden="true"><line class="l2" x1="1" y1="6" x2="27" y2="6"/><path class="h2" d="M26 2l7 4-7 4z"/></svg>Notification sent to someone</li>
+    <li><svg class="lg" viewBox="0 0 34 12" aria-hidden="true"><line class="l3" x1="1" y1="6" x2="27" y2="6"/><path class="h3" d="M26 2l7 4-7 4z"/></svg>Retry</li>
+  </ul>
+</header>
+
+<!-- 1. The whole loop -->
+<section id="loop">
+  <div class="sec-head">
+    <span class="kicker">Overview</span>
+    <h2>The whole loop</h2>
+    <p>Six phases, left to right. Each lane is one actor. The pink pills show what each person is told, and in which lane they land.</p>
+  </div>
+  <figure>
+    <div class="fig-scroll" tabindex="0" role="region" aria-label="End-to-end workflow diagram, scrolls sideways">
+      <svg class="dg" style="min-width:1080px" viewBox="0 0 1380 504" role="img" aria-label="Swimlane workflow with lanes Leader, Member, API, Gemini and Scheduler across six phases: set up, assign, work, remind, ask and report. The leader creates a team and assigns a task; the API notifies the member with task_assigned. The member updates the task; comments notify the leader with task_commented. The hourly scheduler sends task_due_soon and task_overdue. The assistant answers from a scoped snapshot with up to three Gemini requests. A daily run writes the monthly report with one Gemini request and notifies leaders with report_ready.">
+        <defs>
+          <marker id="f1a" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker>
+          <marker id="f1n" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path class="mk-note" d="M0 0L10 5L0 10z"/></marker>
+        </defs>
+
+        <rect class="lane-a" x="0" y="36" width="1380" height="92"/>
+        <rect class="lane-a" x="0" y="220" width="1380" height="92"/>
+        <rect class="lane-a" x="0" y="404" width="1380" height="92"/>
+        <line class="sep" x1="0" y1="36" x2="1380" y2="36"/>
+        <line class="sep" x1="0" y1="128" x2="1380" y2="128"/>
+        <line class="sep" x1="0" y1="220" x2="1380" y2="220"/>
+        <line class="sep" x1="0" y1="312" x2="1380" y2="312"/>
+        <line class="sep" x1="0" y1="404" x2="1380" y2="404"/>
+        <line class="sep" x1="0" y1="496" x2="1380" y2="496"/>
+        <line class="sep" x1="112" y1="36" x2="112" y2="496"/>
+
+        <line class="div" x1="292" y1="8" x2="292" y2="496"/>
+        <line class="div" x1="492" y1="8" x2="492" y2="496"/>
+        <line class="div" x1="722" y1="8" x2="722" y2="496"/>
+        <line class="div" x1="902" y1="8" x2="902" y2="496"/>
+        <line class="div" x1="1092" y1="8" x2="1092" y2="496"/>
+
+        <text class="tphase" x="202" y="24">1 · SET UP</text>
+        <text class="tphase" x="392" y="24">2 · ASSIGN</text>
+        <text class="tphase" x="607" y="24">3 · WORK</text>
+        <text class="tphase" x="812" y="24">4 · REMIND</text>
+        <text class="tphase" x="997" y="24">5 · ASK</text>
+        <text class="tphase" x="1236" y="24">6 · REPORT</text>
+
+        <text class="tlane" x="14" y="80">Leader</text>
+        <text class="tlane-sub" x="14" y="96">role per team</text>
+        <text class="tlane" x="14" y="172">Member</text>
+        <text class="tlane-sub" x="14" y="188">the assignee</text>
+        <text class="tlane c-api" x="14" y="264">API</text>
+        <text class="tlane-sub" x="14" y="280">Django services</text>
+        <text class="tlane c-ai" x="14" y="356">Gemini</text>
+        <text class="tlane-sub" x="14" y="372">AI provider</text>
+        <text class="tlane c-sched" x="14" y="448">Scheduler</text>
+        <text class="tlane-sub" x="14" y="464">inside the server</text>
+
+        <!-- Phase 1: set up -->
+        <rect class="b-person" x="136" y="58" width="132" height="48" rx="6"/>
+        <text class="tt" x="202" y="79">Create a team</text>
+        <text class="ts" x="202" y="95">add members by email</text>
+        <line class="ln" x1="202" y1="106" x2="202" y2="240" marker-end="url(#f1a)"/>
+        <text class="tl" x="210" y="172">POST teams/</text>
+        <rect class="b-api" x="136" y="242" width="132" height="48" rx="6"/>
+        <text class="tt" x="202" y="263">Team + roles</text>
+        <text class="ts" x="202" y="279">one role per team</text>
+
+        <!-- Phase 2: assign -->
+        <rect class="b-person" x="326" y="58" width="132" height="48" rx="6"/>
+        <text class="tt" x="392" y="79">Create a task</text>
+        <text class="ts" x="392" y="95">assignee, due date</text>
+        <line class="ln" x1="352" y1="106" x2="352" y2="240" marker-end="url(#f1a)"/>
+        <text class="tl" x="360" y="150">POST tasks/</text>
+        <rect class="b-api" x="326" y="242" width="132" height="48" rx="6"/>
+        <text class="tt" x="392" y="263">Save + notify</text>
+        <text class="tc" x="392" y="279">create_task()</text>
+        <line class="ln-note" x1="432" y1="242" x2="432" y2="200" marker-end="url(#f1n)"/>
+        <rect class="p-note" x="376" y="174" width="112" height="24" rx="12"/>
+        <text class="tp" x="432" y="190">task_assigned</text>
+
+        <!-- Phase 3: work -->
+        <rect class="b-person" x="506" y="150" width="132" height="48" rx="6"/>
+        <text class="tt" x="572" y="171">Work the task</text>
+        <text class="ts" x="572" y="187">status, comments</text>
+        <line class="ln" x1="572" y1="198" x2="572" y2="240" marker-end="url(#f1a)"/>
+        <text class="tl" x="564" y="224" text-anchor="end">PATCH, POST</text>
+        <rect class="b-api" x="541" y="242" width="132" height="48" rx="6"/>
+        <text class="tt" x="607" y="263">Save the change</text>
+        <text class="ts" x="607" y="279">members: status only</text>
+        <line class="ln-note" x1="656" y1="242" x2="656" y2="96" marker-end="url(#f1n)"/>
+        <rect class="p-note" x="600" y="70" width="112" height="24" rx="12"/>
+        <text class="tp" x="656" y="86">task_commented</text>
+
+        <!-- Phase 4: remind -->
+        <rect class="b-sched" x="746" y="426" width="132" height="48" rx="6"/>
+        <text class="tt" x="812" y="447">Hourly run</text>
+        <text class="tc" x="812" y="463">send_reminders</text>
+        <line class="ln" x1="812" y1="426" x2="812" y2="292" marker-end="url(#f1a)"/>
+        <text class="tl" x="820" y="374">every hour</text>
+        <rect class="b-api" x="746" y="242" width="132" height="48" rx="6"/>
+        <text class="tt" x="812" y="263">Find what's owed</text>
+        <text class="ts" x="812" y="279">once per due date</text>
+        <line class="ln-note" x1="812" y1="242" x2="812" y2="198" marker-end="url(#f1n)"/>
+        <rect class="p-note" x="752" y="150" width="120" height="46" rx="12"/>
+        <text class="tp" x="812" y="169">task_due_soon</text>
+        <text class="tp" x="812" y="185">task_overdue</text>
+
+        <!-- Phase 5: ask -->
+        <rect class="b-person" x="931" y="150" width="132" height="48" rx="6"/>
+        <text class="tt" x="997" y="171">Ask the assistant</text>
+        <text class="ts" x="997" y="187">own thread per team</text>
+        <line class="ln" x1="979" y1="198" x2="979" y2="240" marker-end="url(#f1a)"/>
+        <text class="tl" x="971" y="224" text-anchor="end">question</text>
+        <line class="ln" x1="1015" y1="242" x2="1015" y2="200" marker-end="url(#f1a)"/>
+        <text class="tl" x="1023" y="224">answer</text>
+        <rect class="b-api" x="931" y="242" width="132" height="48" rx="6"/>
+        <text class="tt" x="997" y="263">Snapshot + tools</text>
+        <text class="tc" x="997" y="279">ask()</text>
+        <line class="ln" x1="979" y1="290" x2="979" y2="332" marker-end="url(#f1a)"/>
+        <text class="tl" x="971" y="316" text-anchor="end">prompt</text>
+        <line class="ln" x1="1015" y1="334" x2="1015" y2="292" marker-end="url(#f1a)"/>
+        <text class="tl" x="1023" y="316">replies</text>
+        <rect class="b-ai" x="931" y="334" width="132" height="48" rx="6"/>
+        <text class="tt" x="997" y="355">Gemini</text>
+        <text class="ts" x="997" y="371">≤ 3 requests · 25 s</text>
+
+        <!-- Phase 6: report -->
+        <rect class="b-sched" x="1120" y="426" width="132" height="48" rx="6"/>
+        <text class="tt" x="1186" y="447">Daily run</text>
+        <text class="tc" x="1186" y="463">generate_reports</text>
+        <line class="ln" x1="1186" y1="426" x2="1186" y2="292" marker-end="url(#f1a)"/>
+        <text class="tl" x="1178" y="382" text-anchor="end">per team</text>
+        <rect class="b-api" x="1161" y="242" width="150" height="48" rx="6"/>
+        <text class="tt" x="1236" y="263">Month in numbers</text>
+        <text class="tc" x="1236" y="279">write_report()</text>
+        <line class="ln" x1="1262" y1="290" x2="1262" y2="332" marker-end="url(#f1a)"/>
+        <text class="tl" x="1254" y="316" text-anchor="end">numbers</text>
+        <line class="ln" x1="1300" y1="334" x2="1300" y2="292" marker-end="url(#f1a)"/>
+        <text class="tl" x="1308" y="316">summary</text>
+        <rect class="b-ai" x="1220" y="334" width="132" height="48" rx="6"/>
+        <text class="tt" x="1286" y="355">Writes the words</text>
+        <text class="ts" x="1286" y="371">1 request · 120 s</text>
+        <line class="ln-note" x1="1206" y1="242" x2="1206" y2="96" marker-end="url(#f1n)"/>
+        <rect class="p-note" x="1154" y="70" width="104" height="24" rx="12"/>
+        <text class="tp" x="1206" y="86">report_ready</text>
+      </svg>
+    </div>
+    <span class="hint">Swipe sideways to see the whole diagram.</span>
+    <figcaption>A leader sets up the team and assigns work, the assignee updates it, and the server tells the right people. The scheduler and Gemini handle reminders, answers and reports. Leaders ask the assistant the same way members do, and their snapshot holds the whole team.</figcaption>
+  </figure>
+  <ul class="facts">
+    <li>The role belongs to the membership, so one person can lead one team and be a member of another.<span class="src">docs/api/overview.md · Teams and roles</span></li>
+    <li>Members can change only <code>status</code>. Sending any other field returns 403 and nothing is saved.<span class="src">apps/tasks/services.py · update_task()</span></li>
+    <li>Status changes notify nobody. Assigning, reassigning and commenting do. A comment reaches the task's creator and assignee, except whoever wrote it.<span class="src">apps/tasks/services.py · add_comment()</span></li>
+    <li>Every query for tasks, comments, messages or stats is scoped by role and team in Python. Gemini only calls typed tools and never touches the database.<span class="src">docs/decisions.md · D-004, D-005</span></li>
+  </ul>
+</section>
+
+<!-- 2. Task status -->
+<section id="status">
+  <div class="sec-head">
+    <span class="kicker">Task</span>
+    <h2>Task status</h2>
+    <p>Four statuses. The server records when a task finished and works out lateness from that, so the order people move through them is up to the team.</p>
+  </div>
+  <figure>
+    <div class="fig-scroll" tabindex="0" role="region" aria-label="Task status diagram, scrolls sideways">
+      <svg class="dg" style="min-width:700px" viewBox="0 0 880 240" role="img" aria-label="State diagram: todo goes to in_progress, which goes to done and sets completed_at. in_progress can go to blocked and back. Reopening a done task returns it to in_progress and clears completed_at. A task completed on or before its due date is on time; later is delayed.">
+        <defs>
+          <marker id="f2a" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker>
+        </defs>
+        <rect class="b-person" x="30" y="96" width="120" height="44" rx="22"/>
+        <text class="tstate" x="90" y="122">todo</text>
+        <rect class="b-person" x="240" y="96" width="150" height="44" rx="22"/>
+        <text class="tstate" x="315" y="122">in_progress</text>
+        <rect class="b-person" x="440" y="176" width="120" height="44" rx="22"/>
+        <text class="tstate" x="500" y="202">blocked</text>
+        <rect class="b-api" x="640" y="96" width="120" height="44" rx="22"/>
+        <text class="tstate" x="700" y="122">done</text>
+
+        <line class="ln" x1="150" y1="118" x2="238" y2="118" marker-end="url(#f2a)"/>
+        <text class="tn" x="194" y="109" text-anchor="middle">starts</text>
+        <line class="ln" x1="390" y1="118" x2="638" y2="118" marker-end="url(#f2a)"/>
+        <text class="tl" x="514" y="109" text-anchor="middle">finishes · sets completed_at</text>
+        <path class="ln" d="M335 140V188H438" marker-end="url(#f2a)"/>
+        <text class="tn" x="388" y="182" text-anchor="middle">hits a blocker</text>
+        <path class="ln" d="M440 210H300V142" marker-end="url(#f2a)"/>
+        <text class="tn" x="370" y="227" text-anchor="middle">resumes</text>
+        <path class="ln" d="M700 96V56H325V94" marker-end="url(#f2a)"/>
+        <text class="tl" x="512" y="48" text-anchor="middle">reopened · clears completed_at</text>
+
+        <text class="tn" x="90" y="166" text-anchor="middle">created by a leader</text>
+        <text class="tn" x="90" y="182" text-anchor="middle">assignee optional</text>
+        <text class="tn" x="700" y="166" text-anchor="middle">on time: completed_at ≤ due_at</text>
+        <text class="tn" x="700" y="182" text-anchor="middle">delayed: completed later</text>
+      </svg>
+    </div>
+    <span class="hint">Swipe sideways to see the whole diagram.</span>
+    <figcaption>The usual path runs todo, in_progress, done, with blocked as a detour. Any status can be set from any other: the server doesn't enforce an order, it only keeps <code>completed_at</code> in step with <code>done</code>.</figcaption>
+  </figure>
+  <ul class="facts">
+    <li>Overdue means the due date has passed and the status isn't done. It's computed on every read and never stored.<span class="src">docs/glossary.md · overdue_filter()</span></li>
+    <li>Delayed tasks drive the on-time rate and average delay in stats. Completion rate compares tasks completed in a period with tasks due in it, so it can pass 100%.<span class="src">apps/tasks/services.py · team_stats()</span></li>
+    <li>Removing a member unassigns their unfinished tasks. Finished tasks keep the assignee for history.<span class="src">docs/api/overview.md · Teams and roles</span></li>
+  </ul>
+</section>
+
+<!-- 3. Reminders -->
+<section id="reminders">
+  <div class="sec-head">
+    <span class="kicker">Automation</span>
+    <h2>Due dates and reminders</h2>
+    <p>Reminders don't fire at exact moments. The hourly job looks for tasks that have crossed a line and haven't been told yet.</p>
+  </div>
+  <figure>
+    <div class="fig-scroll" tabindex="0" role="region" aria-label="Reminder timeline, scrolls sideways">
+      <svg class="dg" style="min-width:720px" viewBox="0 0 900 196" role="img" aria-label="Timeline drawn to scale, one tick per hourly run. A task is created, then 24 hours before its due date the due-soon window starts; the first hourly run after that sends task_due_soon. When the due date passes and the task isn't done, the first hourly run after it sends task_overdue.">
+        <defs>
+          <marker id="f3n" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path class="mk-note" d="M0 0L10 5L0 10z"/></marker>
+          <pattern id="f3t" x="50" y="118" width="12" height="7" patternUnits="userSpaceOnUse">
+            <rect class="dot-sched" x="0" y="0" width="1.3" height="7"/>
+          </pattern>
+        </defs>
+        <rect class="band-sched" x="392" y="96" width="288" height="22"/>
+        <rect class="band-note" x="680" y="96" width="186" height="22"/>
+        <text class="tn" x="536" y="111" text-anchor="middle">due within 24 h</text>
+        <text class="tn" x="773" y="111" text-anchor="middle">overdue while not done</text>
+        <line class="axis" x1="44" y1="118" x2="872" y2="118"/>
+        <rect x="49.5" y="118" width="818" height="7" fill="url(#f3t)"/>
+        <line class="guide" x1="392" y1="90" x2="392" y2="134"/>
+        <line class="guide" x1="680" y1="90" x2="680" y2="134"/>
+        <circle class="dot-ink" cx="104" cy="118" r="4"/>
+        <text class="tl" x="104" y="148" text-anchor="middle">created</text>
+        <text class="tl" x="392" y="148" text-anchor="middle">due_at − 24 h</text>
+        <text class="tl" x="680" y="148" text-anchor="middle">due_at</text>
+
+        <line class="ln-note" x1="398" y1="96" x2="398" y2="66" marker-end="url(#f3n)"/>
+        <rect class="p-note" x="343" y="40" width="110" height="24" rx="12"/>
+        <text class="tp" x="398" y="56">task_due_soon</text>
+        <text class="tn" x="462" y="56">first run after the line</text>
+        <line class="ln-note" x1="686" y1="96" x2="686" y2="66" marker-end="url(#f3n)"/>
+        <rect class="p-note" x="631" y="40" width="110" height="24" rx="12"/>
+        <text class="tp" x="686" y="56">task_overdue</text>
+
+        <rect class="dot-sched" x="50" y="173" width="1.3" height="9"/>
+        <text class="tn" x="60" y="182">one tick = one hourly run of send_reminders</text>
+        <text class="tn" x="866" y="182" text-anchor="end">a task marked done gets neither</text>
+      </svg>
+    </div>
+    <span class="hint">Swipe sideways to see the whole diagram.</span>
+    <figcaption>Drawn to scale. Because the job runs once an hour, a reminder can arrive up to an hour after the line it marks.</figcaption>
+  </figure>
+  <ul class="facts">
+    <li>Each assignee gets one <code>task_due_soon</code> and one <code>task_overdue</code> per due date. Moving the due date sets up both again.<span class="src">apps/notifications/services.py · remind()</span></li>
+    <li>The job selects everything still owed, not only what changed in the last hour, so a missed run catches up on the next one.<span class="src">apps/tasks/services.py · send_reminders()</span></li>
+    <li>Inactive assignees get no reminders.<span class="src">apps/tasks/services.py · _reminders_owed()</span></li>
+  </ul>
+</section>
+
+<!-- 4. Notification delivery -->
+<section id="delivery">
+  <div class="sec-head">
+    <span class="kicker">Automation</span>
+    <h2>How a notification travels</h2>
+    <p>One notification row, three channels. The row is the record people see in the app. The socket, push and email are nudges on top of it.</p>
+  </div>
+  <figure>
+    <div class="fig-scroll" tabindex="0" role="region" aria-label="Notification delivery diagram, scrolls sideways">
+      <svg class="dg" style="min-width:720px" viewBox="0 0 900 360" role="img" aria-label="After a change commits, a notification row is written. It goes at once to the person's open sockets. deliver() then sends an Expo push and, for four kinds, a Resend email. A send that fails with 429, a 5xx or a timeout becomes owed again, and deliver_pending retries owed rows hourly for one day.">
+        <defs>
+          <marker id="f4a" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker>
+          <marker id="f4r" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path class="mk-retry" d="M0 0L10 5L0 10z"/></marker>
+        </defs>
+        <rect class="b-api" x="15" y="122" width="150" height="56" rx="6"/>
+        <text class="tt" x="90" y="146">A change commits</text>
+        <text class="tc" x="90" y="164">on_commit</text>
+        <line class="ln" x1="165" y1="150" x2="213" y2="150" marker-end="url(#f4a)"/>
+        <text class="tl" x="189" y="141" text-anchor="middle">writes</text>
+        <rect class="b-api" x="215" y="122" width="150" height="56" rx="6"/>
+        <text class="tt" x="290" y="146">Notification row</text>
+        <text class="ts" x="290" y="164">the lasting record</text>
+
+        <path class="ln" d="M365 140H400V62H448" marker-end="url(#f4a)"/>
+        <path class="ln" d="M365 160H400V200H448" marker-end="url(#f4a)"/>
+        <text class="tl" x="408" y="100">at once</text>
+        <text class="tl" x="408" y="186">then</text>
+
+        <rect class="b-api" x="450" y="34" width="170" height="56" rx="6"/>
+        <text class="tt" x="535" y="58">Live socket</text>
+        <text class="tc" x="535" y="76">group user_{id}</text>
+        <line class="ln" x1="620" y1="62" x2="688" y2="62" marker-end="url(#f4a)"/>
+        <text class="tl" x="654" y="53" text-anchor="middle">event</text>
+        <rect class="b-person" x="690" y="34" width="180" height="56" rx="6"/>
+        <text class="tt" x="780" y="58">Open apps</text>
+        <text class="ts" x="780" y="76">missed one? REST catches up</text>
+
+        <rect class="b-api" x="450" y="172" width="170" height="56" rx="6"/>
+        <text class="tt" x="535" y="196">Push + email</text>
+        <text class="tc" x="535" y="214">deliver()</text>
+        <path class="ln" d="M620 192H648V152H688" marker-end="url(#f4a)"/>
+        <path class="ln" d="M620 208H648V258H688" marker-end="url(#f4a)"/>
+
+        <rect class="b-ext" x="690" y="124" width="180" height="56" rx="6"/>
+        <text class="tt" x="780" y="148">Expo push</text>
+        <text class="ts" x="780" y="166">every kind · dead tokens removed</text>
+        <rect class="b-ext" x="690" y="230" width="180" height="56" rx="6"/>
+        <text class="tt" x="780" y="254">Resend email</text>
+        <text class="ts" x="780" y="272">4 kinds · idempotency key</text>
+
+        <rect class="b-sched" x="450" y="290" width="170" height="56" rx="6"/>
+        <text class="tt" x="535" y="314">Hourly retry</text>
+        <text class="tc" x="535" y="332">deliver_pending</text>
+        <line class="ln-retry" x1="535" y1="290" x2="535" y2="230" marker-end="url(#f4r)"/>
+        <text class="tl" x="543" y="264">owed, &lt; 1 day old</text>
+
+        <path class="ln-retry" d="M870 152H886V318H622" marker-end="url(#f4r)"/>
+        <path class="ln-retry" d="M780 286V318"/>
+        <text class="tl" x="752" y="336" text-anchor="middle">429 · 5xx · timeout → owed again</text>
+      </svg>
+    </div>
+    <span class="hint">Swipe sideways to see the whole diagram.</span>
+    <figcaption>The row is written only after the change commits, then goes to open sockets at once and to push and email through <code>deliver()</code>. Sends that might still succeed are retried every hour for a day.</figcaption>
+  </figure>
+  <ul class="facts">
+    <li>Email goes only for <code>task_assigned</code>, <code>task_due_soon</code>, <code>task_overdue</code> and <code>report_ready</code>. Comments are push only, to stay under Resend's free 100 emails a day.<span class="src">apps/notifications/services.py · EMAIL_KINDS</span></li>
+    <li>Each channel is claimed by stamping <code>pushed_at</code> or <code>emailed_at</code> before sending, so two runs can't send twice. Resend also gets <code>Idempotency-Key: notification/{id}</code>.<span class="src">apps/notifications/services.py · _send_once()</span></li>
+    <li>A 429, a 5xx or no reply releases the claim. Any other 4xx is dropped, and the notification still shows in <code>GET notifications/</code>.<span class="src">apps/notifications/services.py · _send_once()</span></li>
+    <li>The socket stores nothing. After reconnecting, clients refetch messages and the unread count and merge by id. A failed notification never turns the saved change into an error.<span class="src">docs/api/overview.md · Live socket</span></li>
+  </ul>
+</section>
+
+<!-- 5. Scheduler -->
+<section id="scheduler">
+  <div class="sec-head">
+    <span class="kicker">Automation</span>
+    <h2>The hourly scheduler</h2>
+    <p>No Celery, no Redis and no cron endpoint. One loop inside the server process wakes every hour and runs the jobs that are due.</p>
+  </div>
+  <figure>
+    <div class="fig-scroll" tabindex="0" role="region" aria-label="Scheduler timeline, scrolls sideways">
+      <svg class="dg" style="min-width:720px" viewBox="0 0 900 226" role="img" aria-label="Job timeline over the first 26 hours after the server starts. send_reminders and deliver_pending run every hour. generate_reports and flushexpiredtokens run at startup and every 24 hours.">
+        <defs>
+          <pattern id="f5d" x="187" y="46" width="26" height="44" patternUnits="userSpaceOnUse">
+            <circle class="dot-sched" cx="13" cy="6" r="4.5"/>
+          </pattern>
+        </defs>
+        <line class="guide" x1="200" y1="32" x2="200" y2="200"/>
+        <text class="tn" x="208" y="24">server starts: every job runs once</text>
+
+        <line class="track" x1="200" y1="52" x2="876" y2="52"/>
+        <line class="track" x1="200" y1="96" x2="876" y2="96"/>
+        <line class="track" x1="200" y1="140" x2="876" y2="140"/>
+        <line class="track" x1="200" y1="184" x2="876" y2="184"/>
+
+        <text class="tjob" x="20" y="50">send_reminders</text>
+        <text class="tlane-sub" x="20" y="64">due soon and overdue</text>
+        <text class="tjob" x="20" y="94">deliver_pending</text>
+        <text class="tlane-sub" x="20" y="108">retry push and email</text>
+        <text class="tjob" x="20" y="138">generate_reports</text>
+        <text class="tlane-sub" x="20" y="152">last month, per team</text>
+        <text class="tjob" x="20" y="182">flushexpiredtokens</text>
+        <text class="tlane-sub" x="20" y="196">drop old refresh tokens</text>
+
+        <rect x="187" y="46" width="676" height="12" fill="url(#f5d)"/>
+        <rect x="187" y="90" width="676" height="12" fill="url(#f5d)"/>
+        <circle class="dot-day" cx="200" cy="140" r="6.5"/>
+        <circle class="dot-day" cx="824" cy="140" r="6.5"/>
+        <circle class="dot-day" cx="200" cy="184" r="6.5"/>
+        <circle class="dot-day" cx="824" cy="184" r="6.5"/>
+
+        <line class="axis" x1="200" y1="204" x2="876" y2="204"/>
+        <line class="axis" x1="356" y1="204" x2="356" y2="209"/>
+        <line class="axis" x1="512" y1="204" x2="512" y2="209"/>
+        <line class="axis" x1="668" y1="204" x2="668" y2="209"/>
+        <line class="axis" x1="824" y1="204" x2="824" y2="209"/>
+        <text class="te" x="200" y="221">0 h</text>
+        <text class="te" x="356" y="221">6 h</text>
+        <text class="te" x="512" y="221">12 h</text>
+        <text class="te" x="668" y="221">18 h</text>
+        <text class="te" x="824" y="221">24 h</text>
+      </svg>
+    </div>
+    <span class="hint">Swipe sideways to see the whole diagram.</span>
+    <figcaption>Every job runs at startup, because a host that restarts daily would otherwise starve the daily ones. After that, hourly jobs run on each tick and daily jobs on every 24th.</figcaption>
+  </figure>
+  <ul class="facts">
+    <li>The loop runs inside the ASGI server so scheduled notifications reach the same channel layer as the sockets. It moves to <code>manage.py run_scheduler</code> once several servers share a channel layer.<span class="src">config/asgi.py · docs/decisions.md D-016</span></li>
+    <li>Nothing runs more often than hourly, so the Neon database can suspend between runs.<span class="src">config/scheduler.py · JOBS</span></li>
+    <li>Every job is idempotent. A failure is logged, the other jobs still run, and the next tick recovers.<span class="src">config/scheduler.py · _run()</span></li>
+    <li>The schedule never runs in dev, because dev shares its database with prod.<span class="src">tests/test_environment.py</span></li>
+  </ul>
+</section>
+
+<!-- 6. Assistant -->
+<section id="assistant">
+  <div class="sec-head">
+    <span class="kicker">AI</span>
+    <h2>Asking the assistant</h2>
+    <p>Free-tier AI requests are scarce and tokens are cheap, so the flow trades tokens for requests: a large snapshot up front, tools only when the snapshot can't answer.</p>
+  </div>
+  <figure>
+    <div class="fig-scroll" tabindex="0" role="region" aria-label="Assistant flow diagram, scrolls sideways">
+      <svg class="dg" style="min-width:860px" viewBox="0 0 1090 280" role="img" aria-label="Flowchart: a question is checked against a scoped snapshot. If the same question was asked before in the thread, the saved answer is reused with no AI request. Otherwise the call is counted against rate limits, which can answer 429, then sent to Gemini, with at most three requests in 25 seconds or a 503. If Gemini asks for tools, typed tools run with the asker's permissions and the results go back to Gemini. When it answers, the question and answer are saved and returned with 201.">
+        <defs>
+          <marker id="f6a" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker>
+        </defs>
+        <rect class="b-person" x="15" y="122" width="130" height="56" rx="6"/>
+        <text class="tt" x="80" y="146">Question</text>
+        <text class="ts" x="80" y="164">up to 2000 chars</text>
+        <line class="ln" x1="145" y1="150" x2="173" y2="150" marker-end="url(#f6a)"/>
+
+        <rect class="b-api" x="175" y="122" width="130" height="56" rx="6"/>
+        <text class="tt" x="240" y="146">Scoped snapshot</text>
+        <text class="ts" x="240" y="164">what you may see</text>
+        <line class="ln" x1="305" y1="150" x2="333" y2="150" marker-end="url(#f6a)"/>
+
+        <path class="b-api" d="M390 112L445 150L390 188L335 150Z"/>
+        <text class="tq" x="390" y="147">Asked</text>
+        <text class="tq" x="390" y="161">before?</text>
+        <line class="ln" x1="445" y1="150" x2="473" y2="150" marker-end="url(#f6a)"/>
+        <text class="tl" x="459" y="142" text-anchor="middle">no</text>
+
+        <rect class="b-api" x="475" y="122" width="130" height="56" rx="6"/>
+        <text class="tt" x="540" y="146">Rate limits</text>
+        <text class="ts" x="540" y="164">counted before sending</text>
+        <line class="ln" x1="605" y1="150" x2="633" y2="150" marker-end="url(#f6a)"/>
+        <line class="ln" x1="540" y1="178" x2="540" y2="200" marker-end="url(#f6a)"/>
+        <rect class="p-err" x="490" y="202" width="100" height="22" rx="11"/>
+        <text class="te" x="540" y="217">429 throttled</text>
+
+        <rect class="b-ai" x="635" y="122" width="130" height="56" rx="6"/>
+        <text class="tt" x="700" y="146">Gemini</text>
+        <text class="ts" x="700" y="164">≤ 3 requests · 25 s</text>
+        <line class="ln" x1="765" y1="150" x2="803" y2="150" marker-end="url(#f6a)"/>
+        <line class="ln" x1="700" y1="178" x2="700" y2="200" marker-end="url(#f6a)"/>
+        <rect class="p-err" x="636" y="202" width="128" height="22" rx="11"/>
+        <text class="te" x="700" y="217">503 ai_unavailable</text>
+
+        <path class="b-ai" d="M860 112L915 150L860 188L805 150Z"/>
+        <text class="tq" x="860" y="147">Tool</text>
+        <text class="tq" x="860" y="161">calls?</text>
+        <line class="ln" x1="915" y1="150" x2="943" y2="150" marker-end="url(#f6a)"/>
+        <text class="tl" x="929" y="142" text-anchor="middle">no</text>
+
+        <rect class="b-api" x="690" y="20" width="140" height="50" rx="6"/>
+        <text class="tt" x="760" y="41">Run typed tools</text>
+        <text class="ts" x="760" y="58">asker's permissions</text>
+        <path class="ln" d="M860 112V45H832" marker-end="url(#f6a)"/>
+        <text class="tl" x="868" y="84">yes</text>
+        <line class="ln" x1="720" y1="70" x2="720" y2="120" marker-end="url(#f6a)"/>
+        <text class="tl" x="712" y="100" text-anchor="end">results</text>
+
+        <rect class="b-api" x="945" y="122" width="130" height="56" rx="6"/>
+        <text class="tt" x="1010" y="146">Save Q + A</text>
+        <text class="ts" x="1010" y="164">201, cached flag</text>
+
+        <path class="ln" d="M390 188V262H1010V180" marker-end="url(#f6a)"/>
+        <text class="tl" x="700" y="254" text-anchor="middle">yes · reuse the answer, no request spent</text>
+      </svg>
+    </div>
+    <span class="hint">Swipe sideways to see the whole diagram.</span>
+    <figcaption>Most questions are answered from the snapshot in one request. Asking the same question again in the same thread, with nothing changed, costs no request at all.</figcaption>
+  </figure>
+  <ul class="facts">
+    <li>The snapshot holds what the asker may see: up to 50 open tasks, the 10 most recently done, members and stats. A member's snapshot holds only their own work.<span class="src">apps/assistant/services.py · build_snapshot()</span></li>
+    <li>Tools: <code>list_tasks</code>, <code>get_task</code>, <code>get_stats</code>, <code>recent_messages</code> and <code>search</code>, which runs over pgvector. Each one runs with the asker's permissions.<span class="src">apps/assistant/tools.py · TOOLS</span></li>
+    <li>A question gets at most 3 requests, and the last one must answer. The whole question has 25 seconds, under a proxy's usual 30.<span class="src">apps/assistant/services.py · _converse()</span></li>
+    <li>The cache key covers the model, the snapshot and the normalized question. An answer is reused only if it needed no tools and no earlier turns. The thread remembers the last hour.<span class="src">apps/assistant/services.py · ask()</span></li>
+  </ul>
+</section>
+
+<!-- 7. Reports -->
+<section id="reports">
+  <div class="sec-head">
+    <span class="kicker">AI</span>
+    <h2>Monthly reports</h2>
+    <p>Python works out every number. Gemini only writes the words, in one request per team per month.</p>
+  </div>
+  <figure>
+    <div class="fig-scroll" tabindex="0" role="region" aria-label="Monthly report flow diagram, scrolls sideways">
+      <svg class="dg" style="min-width:880px" viewBox="0 0 1135 232" role="img" aria-label="Flowchart: the daily run checks each team. If the team has no leader, the report already exists, or the month had no activity, it skips and spends no AI request. Otherwise Python works out the month's numbers, Gemini writes the text in one request, the report is saved once per month, and each leader gets report_ready.">
+        <defs>
+          <marker id="f7a" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker>
+          <marker id="f7n" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path class="mk-note" d="M0 0L10 5L0 10z"/></marker>
+        </defs>
+        <rect class="b-sched" x="15" y="62" width="124" height="56" rx="6"/>
+        <text class="tt" x="77" y="86">Daily run</text>
+        <text class="ts" x="77" y="104">each team</text>
+        <line class="ln" x1="139" y1="90" x2="163" y2="90" marker-end="url(#f7a)"/>
+
+        <path class="b-api" d="M215 54L265 90L215 126L165 90Z"/>
+        <text class="tq" x="215" y="87">Has a</text>
+        <text class="tq" x="215" y="101">leader?</text>
+        <line class="ln" x1="265" y1="90" x2="293" y2="90" marker-end="url(#f7a)"/>
+        <text class="tl" x="279" y="82" text-anchor="middle">yes</text>
+
+        <path class="b-api" d="M345 54L395 90L345 126L295 90Z"/>
+        <text class="tq" x="345" y="87">Already</text>
+        <text class="tq" x="345" y="101">written?</text>
+        <line class="ln" x1="395" y1="90" x2="423" y2="90" marker-end="url(#f7a)"/>
+        <text class="tl" x="409" y="82" text-anchor="middle">no</text>
+
+        <path class="b-api" d="M475 54L525 90L475 126L425 90Z"/>
+        <text class="tq" x="475" y="87">Any</text>
+        <text class="tq" x="475" y="101">activity?</text>
+        <line class="ln" x1="525" y1="90" x2="553" y2="90" marker-end="url(#f7a)"/>
+        <text class="tl" x="539" y="82" text-anchor="middle">yes</text>
+
+        <rect class="b-api" x="555" y="62" width="140" height="56" rx="6"/>
+        <text class="tt" x="625" y="86">Month in numbers</text>
+        <text class="ts" x="625" y="104">worked out in Python</text>
+        <line class="ln" x1="695" y1="90" x2="723" y2="90" marker-end="url(#f7a)"/>
+
+        <rect class="b-ai" x="725" y="62" width="130" height="56" rx="6"/>
+        <text class="tt" x="790" y="86">Gemini writes</text>
+        <text class="ts" x="790" y="104">1 request · 120 s</text>
+        <line class="ln" x1="855" y1="90" x2="883" y2="90" marker-end="url(#f7a)"/>
+
+        <rect class="b-api" x="885" y="62" width="120" height="56" rx="6"/>
+        <text class="tt" x="945" y="86">Save report</text>
+        <text class="ts" x="945" y="104">once per month</text>
+        <line class="ln-note" x1="1005" y1="90" x2="1023" y2="90" marker-end="url(#f7n)"/>
+        <rect class="p-note" x="1025" y="78" width="100" height="24" rx="12"/>
+        <text class="tp" x="1075" y="94">report_ready</text>
+
+        <rect class="b-skip" x="165" y="176" width="360" height="40" rx="6"/>
+        <text class="tt" x="345" y="200">Skip · no AI request spent</text>
+        <line class="ln" x1="215" y1="126" x2="215" y2="174" marker-end="url(#f7a)"/>
+        <text class="tl" x="223" y="155">no</text>
+        <line class="ln" x1="345" y1="126" x2="345" y2="174" marker-end="url(#f7a)"/>
+        <text class="tl" x="353" y="155">yes</text>
+        <line class="ln" x1="475" y1="126" x2="475" y2="174" marker-end="url(#f7a)"/>
+        <text class="tl" x="483" y="155">no</text>
+      </svg>
+    </div>
+    <span class="hint">Swipe sideways to see the whole diagram.</span>
+    <figcaption>Three checks run before any request is spent. A quiet month gets no report, and old overdue work alone doesn't count as activity, so a dormant team costs nothing.</figcaption>
+  </figure>
+  <ul class="facts">
+    <li>A report covers the last complete month in the team's timezone, which defaults to Africa/Cairo.<span class="src">apps/reports/services.py · last_complete_month()</span></li>
+    <li>Gemini reads up to 200 tasks, 100 comments and 100 chat messages, newest first, and uses the comments and chat to explain why work slipped.<span class="src">apps/reports/services.py · _month_data()</span></li>
+    <li>The report is saved with <code>get_or_create</code>, so two overlapping runs can't write two. Its numbers are frozen as they were on the day it was written.<span class="src">apps/reports/services.py · write_report()</span></li>
+    <li>Only leaders can read reports, because a report rates every member. Members get 403. The body has Summary, Achievements, Risks and Next month, shown as plain text.<span class="src">docs/api/overview.md · Reports</span></li>
+  </ul>
+</section>
+
+<footer>
+  <h2>Sources</h2>
+  <p>Drawn from the code, not from plans. Paths are relative to the repository root.</p>
+  <ul>
+    <li>backend/apps/tasks/services.py</li>
+    <li>backend/apps/notifications/services.py</li>
+    <li>backend/config/scheduler.py</li>
+    <li>backend/config/asgi.py</li>
+    <li>backend/apps/assistant/services.py</li>
+    <li>backend/apps/assistant/tools.py</li>
+    <li>backend/apps/reports/services.py</li>
+    <li>docs/api/overview.md</li>
+    <li>docs/decisions.md</li>
+    <li>docs/glossary.md</li>
+  </ul>
+</footer>
+
+</div>
+
+</body></html>
