@@ -33,8 +33,6 @@ See [TODO.md](TODO.md) for what's next.
 
 Backend setup is in [backend/README.md](backend/README.md).
 
-## How the work is organized
-
-Each part has its own agent, with its rules in `<dir>/CLAUDE.md`, kept under 50 lines. There is no root `CLAUDE.md`. Agents talk to each other only through `docs/`: see [docs/README.md](docs/README.md). Decisions are logged in [docs/decisions.md](docs/decisions.md), and domain terms are in [docs/glossary.md](docs/glossary.md).
-
-Only the project owner commits and pushes. Agents never do.
+## How to Login to test on Web:
+Email: omar@demo.example
+Password: password123
