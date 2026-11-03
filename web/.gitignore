@@ -20,3 +20,5 @@ cache
 .claude
 .agents
 graphify-output
+.vercel
+.env*
