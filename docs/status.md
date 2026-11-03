@@ -22,6 +22,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started. Each agent edits only i
 - ✅ Setup: SPA on TanStack Start, design tokens, HTTP facade, dev proxy to the local API
 - ✅ Auth, teams and members, tasks and comments, chat, live socket with fallback polling, notifications, assistant, stats, reports, account
 - 🔄 Checks: `tsc`, lint, Prettier and build pass, and every screen was driven in a real browser against a local stub of the contract, on a production build. Against the real local API, only anonymous calls were tried: errors, allowed origin, proxy and socket close. Still to do: a signed-in pass against the real API
+- 🔄 Deploy: live on Vercel at `https://nesma-airlines.vercel.app` (project `nesma-airlines`, Root Directory `web`, production branch `main`). Still to do: no API yet, so nobody can log in until the backend has a host and `vercel.json` proxies `/api/`; the socket can't pass Vercel's proxy, see WEB-003
 - Last inbox ID processed: BE-010
 
 ## Mobile

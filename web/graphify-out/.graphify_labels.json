@@ -1,11 +1,11 @@
 {
   "0": "dependencies",
   "1": "compilerOptions",
-  "2": "TaskFormDialog.tsx",
+  "2": "cn",
   "3": "devDependencies",
   "4": "format.ts",
   "5": "components.json",
-  "6": "utils.ts",
+  "6": "index.ts",
   "7": "Building For Production",
   "8": "TaskPage.tsx",
   "9": "CLAUDE.md",
@@ -17,6 +17,6 @@
   "15": "prettier",
   "16": "MembersPage.tsx",
   "17": "auth/query.ts",
-  "18": "StatsPage.tsx",
-  "19": "ThemeToggle.tsx"
+  "18": "TeamStatsPage.tsx",
+  "19": "vercel.json"
 }

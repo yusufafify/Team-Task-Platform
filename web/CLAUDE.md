@@ -26,13 +26,13 @@ npx shadcn@latest add <component>  # Add a primitive, then restyle it to the tok
 
 No test runner is configured. Verify a change with `tsc`, `lint`, `check` and `build`. The pure thread-merge logic has a Node test: `node --experimental-strip-types --test src/lib/pagination.test.ts`.
 
-The dev server proxies `/api` (and the socket) to `http://localhost:8000`, as the web host does in prod, so leave `VITE_API_URL` empty. The API only allows the origin `http://localhost:3000`: if Vite falls back to another port because 3000 is taken, every write gets 403.
+The dev server proxies `/api` (and the socket) to `http://localhost:8000`, as the web host does in prod for `/api` but not the socket, so leave `VITE_API_URL` empty. The API only allows the origin `http://localhost:3000`: if Vite falls back to another port because 3000 is taken, every write gets 403.
 
 A running `preview` server keeps linking the previous build's hashed assets, so after a rebuild the page renders unstyled until it is restarted.
 
 ## Architecture
 
-**SPA on Start.** `vite.config.ts` sets `tanstackStart({ spa: { enabled: true } })`. There is no `index.html` or `main.tsx`: the document is the `shellComponent` in `src/routes/__root.tsx`, prerendered at build time to `dist/client/_shell.html`. Deploy `dist/client` to a static host that falls back to `_shell.html` for every path. Nothing may need a server at runtime, so `createServerFn` and `useSession` are off limits, even for mocks.
+**SPA on Start.** `vite.config.ts` sets `tanstackStart({ spa: { enabled: true } })`. There is no `index.html` or `main.tsx`: the document is the `shellComponent` in `src/routes/__root.tsx`, prerendered at build time to `dist/client/_shell.html`. Deploy `dist/client` to a static host that falls back to `_shell.html` for every path. On Vercel, `vercel.json` does this (project `nesma-airlines`, Root Directory `web`), and a push to `main` deploys production, so the CLI can't deploy from `web/`. Its `/api/` proxy rule must use the form `/api/(.*)`, because `/api/:path*` 404s on trailing slashes, and Vercel rewrites drop WebSocket upgrades. Nothing may need a server at runtime, so `createServerFn` and `useSession` are off limits, even for mocks.
 
 **Data flow.** Route file → feature component → `query.ts` hook → `http` facade (`src/lib/http/fetch_instance`) → backend at `/api/v1/`, on `VITE_API_URL` if set. Endpoints are relative, such as `http.get('tasks/')`. The facade sends cookies on every request, times out reads after 30s but never writes, and throws `HttpError` (`status`, `data`, `code`, `requestId`, `retryAfter`). Read errors through the `extract*` helpers in `src/lib/utils.ts`, and branch on the code, never the message. On a stale-session 401 it runs one shared refresh and retries once; `QueryCache` and `MutationCache` in `root-provider.tsx` send a session that stays dead to `/login`. The contract is `../docs/api/overview.md`.
 

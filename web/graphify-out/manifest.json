@@ -144,9 +144,9 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1793663535.6151588,
-    "seen": 1793663585.9576821,
-    "ast_hash": "a6566d7003221cc965e46751ff7b8800",
+    "mtime": 1793665798.9492366,
+    "seen": 1793665807.170807,
+    "ast_hash": "8836cdb1fcb4e2f18580efc721221c9b",
     "semantic_hash": ""
   },
   "README.md": {
@@ -357,12 +357,6 @@
     "mtime": 1793662377.6008182,
     "seen": 1793663585.9576821,
     "ast_hash": "d21ceaddd3a4e03c7383a69570a023c5",
-    "semantic_hash": ""
-  },
-  "src/features/stats/StatsPage.tsx": {
-    "mtime": 1793662385.0281248,
-    "seen": 1793663585.9576821,
-    "ast_hash": "48eed590b759be3d29e29c6561b2e48b",
     "semantic_hash": ""
   },
   "src/features/stats/query.ts": {
@@ -588,9 +582,9 @@
     "semantic_hash": ""
   },
   "src/routes/_app/teams/$teamId/stats.tsx": {
-    "mtime": 1793662424.80959,
-    "seen": 1793663585.9576821,
-    "ast_hash": "e8777ccee4eb884e4c3a2947d9b17739",
+    "mtime": 1793664371.5918114,
+    "seen": 1793665807.170807,
+    "ast_hash": "9845c50c80d4d69acc7dd14db8dfc644",
     "semantic_hash": ""
   },
   "src/routes/_app/teams/index.tsx": {
@@ -621,6 +615,18 @@
     "mtime": 1793661990.663018,
     "seen": 1793663585.9576821,
     "ast_hash": "dd9af51cd9395c99d5e5b65569184e49",
+    "semantic_hash": ""
+  },
+  "src/features/stats/TeamStatsPage.tsx": {
+    "mtime": 1793664371.5523465,
+    "seen": 1793665807.170807,
+    "ast_hash": "742978011a0b142bde333e8d0160abe1",
+    "semantic_hash": ""
+  },
+  "vercel.json": {
+    "mtime": 1793664905.3677528,
+    "seen": 1793665807.170807,
+    "ast_hash": "89e2c86dc01178d78fb202e783356cec",
     "semantic_hash": ""
   }
 }
