@@ -1,0 +1,22 @@
+{
+  "0": "dependencies",
+  "1": "compilerOptions",
+  "2": "TaskFormDialog.tsx",
+  "3": "devDependencies",
+  "4": "format.ts",
+  "5": "components.json",
+  "6": "utils.ts",
+  "7": "Building For Production",
+  "8": "TaskPage.tsx",
+  "9": "CLAUDE.md",
+  "10": "Agent Instructions",
+  "11": "__root.tsx",
+  "12": "prettier.config.js",
+  "13": "vite.config.ts",
+  "14": "eslint.config.js",
+  "15": "prettier",
+  "16": "MembersPage.tsx",
+  "17": "auth/query.ts",
+  "18": "StatsPage.tsx",
+  "19": "ThemeToggle.tsx"
+}

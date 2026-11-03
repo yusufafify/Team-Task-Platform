@@ -16,6 +16,7 @@ const badgeVariants = cva(
         'tag-purple': 'rounded-sm bg-tint-lavender px-2 py-0.5 text-tag-purple',
         'tag-orange': 'rounded-sm bg-tint-peach px-2 py-0.5 text-tag-orange',
         'tag-green': 'rounded-sm bg-tint-mint px-2 py-0.5 text-tag-green',
+        'tag-gray': 'rounded-sm bg-tint-gray px-2 py-0.5 text-on-tint',
       },
     },
     defaultVariants: {

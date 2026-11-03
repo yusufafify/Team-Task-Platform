@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import type { ClassValue } from 'clsx'
 import { extendTailwindMerge } from 'tailwind-merge'
+import { HttpError } from '@/lib/http/errors'
 
 // Register the custom scales (styles.css), so `text-heading-1` isn't mistaken for a text colour and
 // a `shadow-card` passed to a component replaces its base shadow instead of both landing in the DOM.
@@ -47,4 +48,32 @@ export function extractErrorMessage(error: unknown): string {
     return String(error.message)
   }
   return String(error)
+}
+
+// Branch on this, never on the message: the API's `detail` text may change.
+export function extractErrorCode(error: unknown): string | undefined {
+  return error instanceof HttpError ? error.code : undefined
+}
+
+export function extractRequestId(error: unknown): string | null {
+  return error instanceof HttpError && error.status >= 500
+    ? error.requestId
+    : null
+}
+
+export function extractRetryAfter(error: unknown): number | null {
+  return error instanceof HttpError ? error.retryAfter : null
+}
+
+// A 400 with field problems is { field: ["message"] }; unreadable JSON is a { detail, code } instead.
+export function extractFieldErrors(error: unknown): Record<string, string> {
+  if (!(error instanceof HttpError) || error.status !== 400) return {}
+  const { data } = error
+  if (typeof data !== 'object' || data === null || 'detail' in data) return {}
+  return Object.fromEntries(
+    Object.entries(data).map(([field, messages]) => [
+      field,
+      String([messages].flat()[0]),
+    ]),
+  )
 }

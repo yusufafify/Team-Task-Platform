@@ -8,6 +8,10 @@ import tailwindcss from '@tailwindcss/vite'
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
+  // Login cookies need the API on the app's own origin, as the web host's proxy does in prod.
+  server: {
+    proxy: { '/api': { target: 'http://localhost:8000', ws: true } },
+  },
   plugins: [
     devtools(),
     tailwindcss(),
