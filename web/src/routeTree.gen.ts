@@ -9,50 +9,404 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppAccountRouteImport } from './routes/_app/account'
+import { Route as AppNotificationsRouteImport } from './routes/_app/notifications'
+import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
+import { Route as AppTasksTaskIdRouteImport } from './routes/_app/tasks/$taskId'
+import { Route as AppTeamsIndexRouteImport } from './routes/_app/teams/index'
+import { Route as AppTeamsTeamIdRouteImport } from './routes/_app/teams/$teamId'
+import { Route as AppTeamsTeamIdIndexRouteImport } from './routes/_app/teams/$teamId/index'
+import { Route as AppTeamsTeamIdAssistantRouteImport } from './routes/_app/teams/$teamId/assistant'
+import { Route as AppTeamsTeamIdChatRouteImport } from './routes/_app/teams/$teamId/chat'
+import { Route as AppTeamsTeamIdMembersRouteImport } from './routes/_app/teams/$teamId/members'
+import { Route as AppTeamsTeamIdReportsRouteImport } from './routes/_app/teams/$teamId/reports'
+import { Route as AppTeamsTeamIdSettingsRouteImport } from './routes/_app/teams/$teamId/settings'
+import { Route as AppTeamsTeamIdStatsRouteImport } from './routes/_app/teams/$teamId/stats'
 
-const IndexRoute = IndexRouteImport.update({
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAccountRoute = AppAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AppRoute,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AppTasksTaskIdRoute = AppTasksTaskIdRouteImport.update({
+  id: '/tasks/$taskId',
+  path: '/tasks/$taskId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTeamsIndexRoute = AppTeamsIndexRouteImport.update({
+  id: '/teams/',
+  path: '/teams/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTeamsTeamIdRoute = AppTeamsTeamIdRouteImport.update({
+  id: '/teams/$teamId',
+  path: '/teams/$teamId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTeamsTeamIdIndexRoute = AppTeamsTeamIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppTeamsTeamIdRoute,
+} as any)
+const AppTeamsTeamIdAssistantRoute = AppTeamsTeamIdAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => AppTeamsTeamIdRoute,
+} as any)
+const AppTeamsTeamIdChatRoute = AppTeamsTeamIdChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => AppTeamsTeamIdRoute,
+} as any)
+const AppTeamsTeamIdMembersRoute = AppTeamsTeamIdMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => AppTeamsTeamIdRoute,
+} as any)
+const AppTeamsTeamIdReportsRoute = AppTeamsTeamIdReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppTeamsTeamIdRoute,
+} as any)
+const AppTeamsTeamIdSettingsRoute = AppTeamsTeamIdSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppTeamsTeamIdRoute,
+} as any)
+const AppTeamsTeamIdStatsRoute = AppTeamsTeamIdStatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => AppTeamsTeamIdRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AppIndexRoute
+  '/account': typeof AppAccountRoute
+  '/notifications': typeof AppNotificationsRoute
+  '/login': typeof AuthLoginRoute
+  '/register': typeof AuthRegisterRoute
+  '/tasks/$taskId': typeof AppTasksTaskIdRoute
+  '/teams/$teamId': typeof AppTeamsTeamIdRouteWithChildren
+  '/teams/': typeof AppTeamsIndexRoute
+  '/teams/$teamId/assistant': typeof AppTeamsTeamIdAssistantRoute
+  '/teams/$teamId/chat': typeof AppTeamsTeamIdChatRoute
+  '/teams/$teamId/members': typeof AppTeamsTeamIdMembersRoute
+  '/teams/$teamId/reports': typeof AppTeamsTeamIdReportsRoute
+  '/teams/$teamId/settings': typeof AppTeamsTeamIdSettingsRoute
+  '/teams/$teamId/stats': typeof AppTeamsTeamIdStatsRoute
+  '/teams/$teamId/': typeof AppTeamsTeamIdIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof AppIndexRoute
+  '/account': typeof AppAccountRoute
+  '/notifications': typeof AppNotificationsRoute
+  '/login': typeof AuthLoginRoute
+  '/register': typeof AuthRegisterRoute
+  '/tasks/$taskId': typeof AppTasksTaskIdRoute
+  '/teams': typeof AppTeamsIndexRoute
+  '/teams/$teamId/assistant': typeof AppTeamsTeamIdAssistantRoute
+  '/teams/$teamId/chat': typeof AppTeamsTeamIdChatRoute
+  '/teams/$teamId/members': typeof AppTeamsTeamIdMembersRoute
+  '/teams/$teamId/reports': typeof AppTeamsTeamIdReportsRoute
+  '/teams/$teamId/settings': typeof AppTeamsTeamIdSettingsRoute
+  '/teams/$teamId/stats': typeof AppTeamsTeamIdStatsRoute
+  '/teams/$teamId': typeof AppTeamsTeamIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_auth': typeof AuthRouteWithChildren
+  '/_app/account': typeof AppAccountRoute
+  '/_app/notifications': typeof AppNotificationsRoute
+  '/_auth/login': typeof AuthLoginRoute
+  '/_auth/register': typeof AuthRegisterRoute
+  '/_app/': typeof AppIndexRoute
+  '/_app/tasks/$taskId': typeof AppTasksTaskIdRoute
+  '/_app/teams/$teamId': typeof AppTeamsTeamIdRouteWithChildren
+  '/_app/teams/': typeof AppTeamsIndexRoute
+  '/_app/teams/$teamId/assistant': typeof AppTeamsTeamIdAssistantRoute
+  '/_app/teams/$teamId/chat': typeof AppTeamsTeamIdChatRoute
+  '/_app/teams/$teamId/members': typeof AppTeamsTeamIdMembersRoute
+  '/_app/teams/$teamId/reports': typeof AppTeamsTeamIdReportsRoute
+  '/_app/teams/$teamId/settings': typeof AppTeamsTeamIdSettingsRoute
+  '/_app/teams/$teamId/stats': typeof AppTeamsTeamIdStatsRoute
+  '/_app/teams/$teamId/': typeof AppTeamsTeamIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/account'
+    | '/notifications'
+    | '/login'
+    | '/register'
+    | '/tasks/$taskId'
+    | '/teams/$teamId'
+    | '/teams/'
+    | '/teams/$teamId/assistant'
+    | '/teams/$teamId/chat'
+    | '/teams/$teamId/members'
+    | '/teams/$teamId/reports'
+    | '/teams/$teamId/settings'
+    | '/teams/$teamId/stats'
+    | '/teams/$teamId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/account'
+    | '/notifications'
+    | '/login'
+    | '/register'
+    | '/tasks/$taskId'
+    | '/teams'
+    | '/teams/$teamId/assistant'
+    | '/teams/$teamId/chat'
+    | '/teams/$teamId/members'
+    | '/teams/$teamId/reports'
+    | '/teams/$teamId/settings'
+    | '/teams/$teamId/stats'
+    | '/teams/$teamId'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/_auth'
+    | '/_app/account'
+    | '/_app/notifications'
+    | '/_auth/login'
+    | '/_auth/register'
+    | '/_app/'
+    | '/_app/tasks/$taskId'
+    | '/_app/teams/$teamId'
+    | '/_app/teams/'
+    | '/_app/teams/$teamId/assistant'
+    | '/_app/teams/$teamId/chat'
+    | '/_app/teams/$teamId/members'
+    | '/_app/teams/$teamId/reports'
+    | '/_app/teams/$teamId/settings'
+    | '/_app/teams/$teamId/stats'
+    | '/_app/teams/$teamId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/account': {
+      id: '/_app/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AppAccountRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/notifications': {
+      id: '/_app/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_auth/login': {
+      id: '/_auth/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/register': {
+      id: '/_auth/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_app/tasks/$taskId': {
+      id: '/_app/tasks/$taskId'
+      path: '/tasks/$taskId'
+      fullPath: '/tasks/$taskId'
+      preLoaderRoute: typeof AppTasksTaskIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/teams/': {
+      id: '/_app/teams/'
+      path: '/teams'
+      fullPath: '/teams/'
+      preLoaderRoute: typeof AppTeamsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/teams/$teamId': {
+      id: '/_app/teams/$teamId'
+      path: '/teams/$teamId'
+      fullPath: '/teams/$teamId'
+      preLoaderRoute: typeof AppTeamsTeamIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/teams/$teamId/': {
+      id: '/_app/teams/$teamId/'
+      path: '/'
+      fullPath: '/teams/$teamId/'
+      preLoaderRoute: typeof AppTeamsTeamIdIndexRouteImport
+      parentRoute: typeof AppTeamsTeamIdRoute
+    }
+    '/_app/teams/$teamId/assistant': {
+      id: '/_app/teams/$teamId/assistant'
+      path: '/assistant'
+      fullPath: '/teams/$teamId/assistant'
+      preLoaderRoute: typeof AppTeamsTeamIdAssistantRouteImport
+      parentRoute: typeof AppTeamsTeamIdRoute
+    }
+    '/_app/teams/$teamId/chat': {
+      id: '/_app/teams/$teamId/chat'
+      path: '/chat'
+      fullPath: '/teams/$teamId/chat'
+      preLoaderRoute: typeof AppTeamsTeamIdChatRouteImport
+      parentRoute: typeof AppTeamsTeamIdRoute
+    }
+    '/_app/teams/$teamId/members': {
+      id: '/_app/teams/$teamId/members'
+      path: '/members'
+      fullPath: '/teams/$teamId/members'
+      preLoaderRoute: typeof AppTeamsTeamIdMembersRouteImport
+      parentRoute: typeof AppTeamsTeamIdRoute
+    }
+    '/_app/teams/$teamId/reports': {
+      id: '/_app/teams/$teamId/reports'
+      path: '/reports'
+      fullPath: '/teams/$teamId/reports'
+      preLoaderRoute: typeof AppTeamsTeamIdReportsRouteImport
+      parentRoute: typeof AppTeamsTeamIdRoute
+    }
+    '/_app/teams/$teamId/settings': {
+      id: '/_app/teams/$teamId/settings'
+      path: '/settings'
+      fullPath: '/teams/$teamId/settings'
+      preLoaderRoute: typeof AppTeamsTeamIdSettingsRouteImport
+      parentRoute: typeof AppTeamsTeamIdRoute
+    }
+    '/_app/teams/$teamId/stats': {
+      id: '/_app/teams/$teamId/stats'
+      path: '/stats'
+      fullPath: '/teams/$teamId/stats'
+      preLoaderRoute: typeof AppTeamsTeamIdStatsRouteImport
+      parentRoute: typeof AppTeamsTeamIdRoute
     }
   }
 }
 
+interface AppTeamsTeamIdRouteChildren {
+  AppTeamsTeamIdAssistantRoute: typeof AppTeamsTeamIdAssistantRoute
+  AppTeamsTeamIdChatRoute: typeof AppTeamsTeamIdChatRoute
+  AppTeamsTeamIdMembersRoute: typeof AppTeamsTeamIdMembersRoute
+  AppTeamsTeamIdReportsRoute: typeof AppTeamsTeamIdReportsRoute
+  AppTeamsTeamIdSettingsRoute: typeof AppTeamsTeamIdSettingsRoute
+  AppTeamsTeamIdStatsRoute: typeof AppTeamsTeamIdStatsRoute
+  AppTeamsTeamIdIndexRoute: typeof AppTeamsTeamIdIndexRoute
+}
+
+const AppTeamsTeamIdRouteChildren: AppTeamsTeamIdRouteChildren = {
+  AppTeamsTeamIdAssistantRoute: AppTeamsTeamIdAssistantRoute,
+  AppTeamsTeamIdChatRoute: AppTeamsTeamIdChatRoute,
+  AppTeamsTeamIdMembersRoute: AppTeamsTeamIdMembersRoute,
+  AppTeamsTeamIdReportsRoute: AppTeamsTeamIdReportsRoute,
+  AppTeamsTeamIdSettingsRoute: AppTeamsTeamIdSettingsRoute,
+  AppTeamsTeamIdStatsRoute: AppTeamsTeamIdStatsRoute,
+  AppTeamsTeamIdIndexRoute: AppTeamsTeamIdIndexRoute,
+}
+
+const AppTeamsTeamIdRouteWithChildren = AppTeamsTeamIdRoute._addFileChildren(
+  AppTeamsTeamIdRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppAccountRoute: typeof AppAccountRoute
+  AppNotificationsRoute: typeof AppNotificationsRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppTasksTaskIdRoute: typeof AppTasksTaskIdRoute
+  AppTeamsTeamIdRoute: typeof AppTeamsTeamIdRouteWithChildren
+  AppTeamsIndexRoute: typeof AppTeamsIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAccountRoute: AppAccountRoute,
+  AppNotificationsRoute: AppNotificationsRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppTasksTaskIdRoute: AppTasksTaskIdRoute,
+  AppTeamsTeamIdRoute: AppTeamsTeamIdRouteWithChildren,
+  AppTeamsIndexRoute: AppTeamsIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface AuthRouteChildren {
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

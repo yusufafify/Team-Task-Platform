@@ -24,7 +24,9 @@ npm run generate-routes  # Regenerate src/routeTree.gen.ts by hand
 npx shadcn@latest add <component>  # Add a primitive, then restyle it to the tokens
 ```
 
-No test runner is configured, so there is no test command yet. Verify a change with `tsc`, `lint`, `check` and `build`.
+No test runner is configured. Verify a change with `tsc`, `lint`, `check` and `build`. The pure thread-merge logic has a Node test: `node --experimental-strip-types --test src/lib/pagination.test.ts`.
+
+The dev server proxies `/api` (and the socket) to `http://localhost:8000`, as the web host does in prod, so leave `VITE_API_URL` empty. The API only allows the origin `http://localhost:3000`: if Vite falls back to another port because 3000 is taken, every write gets 403.
 
 A running `preview` server keeps linking the previous build's hashed assets, so after a rebuild the page renders unstyled until it is restarted.
 
@@ -32,11 +34,13 @@ A running `preview` server keeps linking the previous build's hashed assets, so 
 
 **SPA on Start.** `vite.config.ts` sets `tanstackStart({ spa: { enabled: true } })`. There is no `index.html` or `main.tsx`: the document is the `shellComponent` in `src/routes/__root.tsx`, prerendered at build time to `dist/client/_shell.html`. Deploy `dist/client` to a static host that falls back to `_shell.html` for every path. Nothing may need a server at runtime, so `createServerFn` and `useSession` are off limits, even for mocks.
 
-**Data flow.** Route file → feature component → `query.ts` hook → `http` facade (`src/lib/http/fetch_instance`) → backend at `VITE_API_URL`. The facade sends cookies on every request, times out reads after 30s but never writes, and throws `HttpError` (`status`, `data`). Read errors through `extractStatusCode` and `extractErrorMessage` in `src/lib/utils.ts`. It has no auth handling yet: there is no 401 refresh or redirect, because that depends on the backend's contract.
+**Data flow.** Route file → feature component → `query.ts` hook → `http` facade (`src/lib/http/fetch_instance`) → backend at `/api/v1/`, on `VITE_API_URL` if set. Endpoints are relative, such as `http.get('tasks/')`. The facade sends cookies on every request, times out reads after 30s but never writes, and throws `HttpError` (`status`, `data`, `code`, `requestId`, `retryAfter`). Read errors through the `extract*` helpers in `src/lib/utils.ts`, and branch on the code, never the message. On a stale-session 401 it runs one shared refresh and retries once; `QueryCache` and `MutationCache` in `root-provider.tsx` send a session that stays dead to `/login`. The contract is `../docs/api/overview.md`.
 
-**Router and query wiring.** `getContext()` in `src/integrations/tanstack-query/root-provider.tsx` creates the `QueryClient` (retries 5xx and network failures only). `src/router.tsx` passes it into router context, so loaders reach it as `context.queryClient`. Failing routes and unknown paths render `src/components/shared/RouteFallbacks.tsx` in place. `src/routeTree.gen.ts` is generated; never edit it.
+**Live updates.** `useLiveSocket` in `src/features/live/hooks.ts` holds the one socket, mounted by `AppShell`. REST stays the record: every connect fetches the open chat's first page and the unread count, and threads merge by `id` through `src/lib/pagination.ts`. Polling exists only as the contract's fallback while the socket is down.
 
-**Feature layout.** Routes in `src/routes/` stay thin and render from `src/features/<name>/`, which holds `query.ts`, `hooks.ts`, `types.ts`, `schema.ts` and `mocks/`. `src/components/ui/` is for shared primitives only. `src/features/foundation/` is the placeholder page at `/`; delete it when the real home lands.
+**Router and query wiring.** `getContext()` in `src/integrations/tanstack-query/root-provider.tsx` creates the `QueryClient` (retries 5xx and network failures only). `src/router.tsx` passes it into router context, so loaders reach it as `context.queryClient`. Failing routes and unknown paths render `src/components/shared/RouteFallbacks.tsx` in place. Throw `notFound()` from a loader, never during render: only a route with its own `notFoundComponent` catches one thrown in render, and otherwise the whole shell is lost. `/_app` guards signed-in pages and `/_auth` holds login and register. `src/routeTree.gen.ts` is generated; never edit it.
+
+**Feature layout.** Routes in `src/routes/` stay thin and render from `src/features/<name>/`, which holds `query.ts`, `hooks.ts`, `types.ts`, `schema.ts` and `mocks/`. `src/components/ui/` is for shared primitives only, and `src/components/shared/` for app-wide pieces such as `Page`, `States`, `ConfirmDialog` and `Composer`. Forms use `useSchemaForm` in `src/hooks/`, which validates with Zod and maps the API's 400 field errors onto the fields.
 
 **Styling.** `src/styles.css` holds every token: fixed values in `@theme`, theme-dependent ones as variables under `:root` and `.dark`, mapped to Tailwind through `@theme inline`. Any new custom `text-*`, `shadow-*` or spacing token must also be registered in `extendTailwindMerge` in `src/lib/utils.ts`, or `cn()` will merge it wrongly. `THEME_INIT_SCRIPT` in `__root.tsx` sets `.dark` before first paint, and `ThemeToggle` persists the choice to `localStorage.theme`. `@/` and `#/` both alias `src/`; use `@/`.
 

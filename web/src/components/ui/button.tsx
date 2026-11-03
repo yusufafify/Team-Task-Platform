@@ -26,7 +26,7 @@ const buttonVariants = cva(
       // 44px on touch, the spec's 40px on desktop. sm is for dense toolbars and tables only.
       size: {
         default: 'h-11 px-[18px] lg:h-10',
-        sm: 'h-9 px-3',
+        sm: 'h-11 px-3 lg:h-9',
         icon: 'size-11 lg:size-10',
       },
     },

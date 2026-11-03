@@ -3,7 +3,7 @@ import type { ErrorComponentProps } from '@tanstack/react-router'
 import { AlertTriangle, Compass } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
-import { extractErrorMessage } from '@/lib/utils'
+import { extractErrorMessage, extractRequestId } from '@/lib/utils'
 
 interface FallbackProps {
   icon: ReactNode
@@ -32,11 +32,15 @@ function Fallback({ icon, title, message, action }: FallbackProps) {
 
 export function RouteError({ error }: ErrorComponentProps) {
   const router = useRouter()
+  const requestId = extractRequestId(error)
   return (
     <Fallback
       icon={<AlertTriangle className="size-7" aria-hidden="true" />}
       title="This page couldn't load"
-      message={extractErrorMessage(error)}
+      message={
+        extractErrorMessage(error) +
+        (requestId ? ` Reference: ${requestId}` : '')
+      }
       action={<Button onClick={() => router.invalidate()}>Try again</Button>}
     />
   )

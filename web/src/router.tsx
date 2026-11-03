@@ -10,6 +10,8 @@ export function getRouter() {
     routeTree,
     context,
     scrollRestoration: true,
+    // The app shell scrolls its main column, not the window.
+    scrollToTopSelectors: ['#main'],
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
     // Rendered in place of the failing route, so layouts keep their navigation.

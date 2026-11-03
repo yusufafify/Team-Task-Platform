@@ -1,8 +1,16 @@
-import { QueryClient } from '@tanstack/react-query'
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
+import { endExpiredSession } from '@/lib/http/errors'
 import { extractStatusCode } from '@/lib/utils'
 
 export function getContext() {
   const queryClient = new QueryClient({
+    queryCache: new QueryCache({
+      // The route guards answer the "is anyone signed in?" query themselves.
+      onError: (error, query) => {
+        if (!query.meta?.authCheck) endExpiredSession(error)
+      },
+    }),
+    mutationCache: new MutationCache({ onError: endExpiredSession }),
     defaultOptions: {
       queries: {
         refetchOnWindowFocus: false,
