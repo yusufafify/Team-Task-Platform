@@ -1,11 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
-import * as Notifications from 'expo-notifications';
 import { router, usePathname } from 'expo-router';
 import { useEffect } from 'react';
 
 import { teamsQuery } from '@/features/teams/query';
 
-import { pushDataSchema, registerPushToken } from './push';
+import { Notifications, pushDataSchema, registerPushToken } from './push';
 import { markRead, NOTIFICATIONS_KEY, unreadCountQuery } from './query';
 import type { Notification } from './types';
 
@@ -37,18 +36,21 @@ export function useOpenNotification() {
 // Module-level, so signing out and back in doesn't replay the tap that opened the app.
 let handledPush: string | null = null;
 
+const useLastResponse = Notifications?.useLastNotificationResponse ?? (() => null);
+
 export function usePushSetup() {
   const open = useOpenNotification();
-  const response = Notifications.useLastNotificationResponse();
+  const response = useLastResponse();
 
   useEffect(() => {
     void registerPushToken().catch(() => undefined);
+    if (!Notifications) return;
     const subscription = Notifications.addPushTokenListener(() => void registerPushToken().catch(() => undefined));
     return () => subscription.remove();
   }, []);
 
   useEffect(() => {
-    if (!response || response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) return;
+    if (!response || response.actionIdentifier !== Notifications?.DEFAULT_ACTION_IDENTIFIER) return;
     const { identifier, content } = response.notification.request;
     if (handledPush === identifier) return;
     handledPush = identifier;

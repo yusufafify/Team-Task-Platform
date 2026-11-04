@@ -1,7 +1,6 @@
+import { isRunningInExpoGo } from 'expo';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
-import { AndroidImportance } from 'expo-notifications';
 import { Platform } from 'react-native';
 import { z } from 'zod';
 
@@ -14,7 +13,13 @@ export const pushDataSchema = z.object({
   task: z.number().nullable(),
 });
 
-Notifications.setNotificationHandler({
+// Expo Go can't load expo-notifications' native side, so it's never imported there.
+export const Notifications: typeof import('expo-notifications') | null = isRunningInExpoGo()
+  ? null
+  : // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require('expo-notifications');
+
+Notifications?.setNotificationHandler({
   // The socket already updates the list in the foreground; the banner is the nudge.
   handleNotification: async () => ({
     shouldShowBanner: true,
@@ -31,12 +36,12 @@ export async function registerPushToken(): Promise<void> {
   const projectId: unknown = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
   // shortcut: no push until the app is linked to an EAS project (`eas init`) and runs on a real
   // device in a development build; Expo Go and simulators can't get a push token.
-  if (!Device.isDevice || typeof projectId !== 'string') return;
+  if (!Notifications || !Device.isDevice || typeof projectId !== 'string') return;
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'Notifications',
-      importance: AndroidImportance.DEFAULT,
+      importance: Notifications.AndroidImportance.DEFAULT,
     });
   }
   let { status } = await Notifications.getPermissionsAsync();
