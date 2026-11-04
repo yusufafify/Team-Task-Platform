@@ -19,3 +19,5 @@ REST_FRAMEWORK = REST_FRAMEWORK | {"TEST_REQUEST_DEFAULT_FORMAT": "json"}
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 # A test that forgets its stub then fails, instead of spending the real quota.
 GEMINI_API_KEY = "test-only"
+# The developer's real key sits in .env; blank it so no test emails by accident. Delivery tests set their own.
+RESEND_API_KEY = None
