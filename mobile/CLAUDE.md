@@ -34,6 +34,8 @@ Act as a senior React Native engineer on the Expo app in `/mobile`. `/backend` a
 
 ## Memory
 
+Run session-start by reading `.claude/handover.md`, and update it at every milestone. `.claude/brain.md` indexes all mobile memory.
+
 `.claude/rules/` regions load by themselves when you touch a matching file, through `paths:` frontmatter. Put each new durable fact in its region, and give a new topic its own region with `paths:`. Keep each region under 50 lines, and this file too.
 
 ## Skills
